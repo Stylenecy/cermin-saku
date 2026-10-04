@@ -130,8 +130,8 @@ contract Deploy is Script {
         vm.serializeUint(j, "deployBlock", block.number);
         vm.serializeString(j, "priceFeedKind", d.feedKind);
         vm.serializeBool(j, "mockCdp", d.mockCdp);
-        vm.serializeUint(j, "minDebt", d.minDebt);
-        vm.serializeUint(j, "gasComp", d.gasComp);
+        vm.serializeString(j, "minDebt", vm.toString(d.minDebt));
+        vm.serializeString(j, "gasComp", vm.toString(d.gasComp));
         vm.serializeAddress(j, "CerminFactory", d.factory);
         vm.serializeAddress(j, "CerminVaultImpl", d.impl);
         vm.serializeAddress(j, "CerminSaku", d.saku);

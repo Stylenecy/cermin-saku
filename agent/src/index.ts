@@ -8,6 +8,8 @@ import { fetchPriceAndVaults, snapshotVault, decide } from './monitors/vaults.js
 import { executeSkim } from './executors/skim.js';
 import { executeDefend } from './executors/defend.js';
 import { executeAccrueYield } from './executors/accrueYield.js';
+import { executeRelease } from './executors/release.js';
+import { decideSaku, decodeLabel, listDueSchedules, previewStatus } from './monitors/saku.js';
 import { initDb, recordAction, lastActionAt } from './storage/actionLog.js';
 import { createMetrics, type Metrics } from './metrics.js';
 import { startHealthServer } from './health.js';
@@ -151,6 +153,55 @@ async function runYieldAccrual(deps: Deps): Promise<void> {
   }
 }
 
+const SAKU_MAX_PAYMENTS_PER_CYCLE = 6;
+
+// Cermin Saku: pay every due allowance the vault approves at the live price.
+// Runs AFTER the vault loop, so a defend in the same cycle always comes first.
+async function runSaku(deps: Deps, price: bigint): Promise<void> {
+  const { config, clients, logger, db, metrics } = deps;
+  const saku = config.SAKU_ADDRESS;
+  if (!saku) return;
+
+  const due = await listDueSchedules(clients.publicClient, saku);
+  if (due.length === 0) {
+    logger.info('saku: no allowance due');
+    return;
+  }
+  // One at a time: payments from the same vault must see each other's effect.
+  for (const { schedule, due: n } of due) {
+    const key = `saku:${schedule.id}`;
+    const ctx = {
+      schedule: schedule.id.toString(),
+      label: decodeLabel(schedule.label),
+      vault: schedule.vault,
+      recipient: schedule.recipient,
+      amountMusd: (Number(schedule.amount) / 1e18).toFixed(2),
+      due: n,
+    };
+    try {
+      // Catch up missed periods (keeper was down, or payments were held), but
+      // re-check safety before every single payment and cap work per cycle.
+      for (let k = 0; k < Math.min(n, SAKU_MAX_PAYMENTS_PER_CYCLE); k++) {
+        const { status, icrBps } = await previewStatus(clients.publicClient, saku, schedule, price);
+        const decision = decideSaku(status, lastActionAt(db, key, 'SAKU_HELD') ?? undefined, Date.now(), config.SAKU_HOLD_COOLDOWN_MS);
+        logger.info({ ...ctx, status, icrBps: Number(icrBps), action: decision.action }, `saku: ${decision.reason}`);
+        if (decision.action === 'WAIT') break;
+
+        const res = await executeRelease(clients.publicClient, clients.walletClient, saku, schedule.id);
+        metrics.txSubmitted += 1;
+        const action = res.outcome === 'paid' ? 'SAKU_PAID' : 'SAKU_HELD';
+        logger.info({ ...ctx, txHash: res.hash, outcome: res.outcome }, `saku: allowance ${res.outcome}`);
+        recordAction(db, { vault: key as `0x${string}`, action, reason: decision.reason, txHash: res.hash, timestamp: Date.now() });
+        if (res.outcome !== 'paid') break;
+      }
+    } catch (err) {
+      metrics.txFailed += 1;
+      metrics.lastError = err instanceof Error ? err.message : String(err);
+      logger.error({ ...ctx, err }, 'saku: release failed');
+    }
+  }
+}
+
 // Read the keeper's gas balance and warn when it's running low. An empty signer
 // makes every skim/defend revert — and a missed defend can let a vault liquidate.
 async function checkKeeperGas(deps: Deps): Promise<void> {
@@ -210,6 +261,8 @@ async function runCycle(deps: Deps, seq: number): Promise<void> {
         'cycle complete',
       );
     }
+
+    await runSaku(deps, price);
 
     if (active()) {
       metrics.cyclesRun += 1;

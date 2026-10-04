@@ -7,10 +7,20 @@ const OptHex = z.preprocess(v => (v === '' ? undefined : v), Hex.optional());
 
 const ConfigSchema = z.object({
   BSC_RPC_URL: z.string().url().default('https://data-seed-prebsc-1-s1.bnbchain.org:8545'),
-  CHAIN_ID: z.coerce.number().int().refine(v => v === 97 || v === 56, 'CHAIN_ID must be 97 or 56').default(97),
+  CHAIN_ID: z.coerce
+    .number()
+    .int()
+    .refine(v => v === 97 || v === 56 || v === 31337, 'CHAIN_ID must be 97, 56 or 31337 (local Anvil)')
+    .default(97),
   PRIVATE_KEY: z.string().regex(/^0x[0-9a-fA-F]{64}$/).transform(v => v as `0x${string}`),
   CERMIN_FACTORY_ADDRESS: Hex,
   PRICE_FEED_ADDRESS: Hex,
+  // ── Cermin Saku ────────────────────────────────────────────────────────
+  // CerminSaku contract. Unset = the keeper only runs Kiel's skim/defend loop.
+  SAKU_ADDRESS: OptHex,
+  // An unsafe allowance is HELD by the contract. The keeper records that hold
+  // on-chain at most once per schedule per cooldown (evidence, not spam).
+  SAKU_HOLD_COOLDOWN_MS: z.coerce.number().int().positive().default(1_800_000),
   // Reserved for production hint generation; unused while computeHints() returns
   // the 0x0 "no hint" pair, so it's optional to keep deploy config minimal.
   SORTED_TROVES_ADDRESS: OptHex,
