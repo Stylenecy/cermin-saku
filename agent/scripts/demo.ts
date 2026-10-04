@@ -152,6 +152,11 @@ async function main() {
         account,
       }),
     );
+  } else if (cmd === 'fund') {
+    const { account, client } = wallet('PARENT_PRIVATE_KEY');
+    await send(`send ${flag('bnb')} BNB to ${flag('to')}`, () =>
+      client.sendTransaction({ to: flag('to') as Hex, value: parseEther(flag('bnb')), chain, account }),
+    );
   } else if (cmd === 'status') {
     const owner = (process.env['PARENT_ADDRESS'] ?? wallet('PARENT_PRIVATE_KEY').account.address) as Hex;
     const vault = await vaultOf(owner);
