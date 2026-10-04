@@ -56,3 +56,8 @@ SUBMISSION.txt
 # Internal docs kept local, intentionally not in the public repo
 BLUEPRINT.md
 CLAUDE.md
+
+# Cermin Saku: local rehearsal artefacts and testnet wallets (never commit)
+contracts/deployments/anvil.json
+wallets.env
+anvil.env
