@@ -46,6 +46,7 @@ contract CerminVaultTest is Test {
         troveManager = new MockTroveManager();
         borrowerOps = new MockBorrowerOperations(address(musd), address(troveManager));
         troveManager.setBorrowerOps(address(borrowerOps));
+        musd.setMinter(address(borrowerOps), true);
         priceFeed = new MockPriceFeed(BTC_PRICE);
         savingsVault = new MockSavingsVault(address(musd));
 
@@ -54,7 +55,9 @@ contract CerminVaultTest is Test {
             address(troveManager),
             address(priceFeed),
             address(musd),
-            address(savingsVault)
+            address(savingsVault),
+            2_000e18, // Mezo min debt
+            200e18 // Mezo gas compensation
         );
         factory = new CerminFactory(address(impl));
 

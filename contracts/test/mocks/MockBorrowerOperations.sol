@@ -12,6 +12,16 @@ contract MockBorrowerOperations is IBorrowerOperations {
     MockMUSD public musd;
     MockTroveManager public troveManager;
 
+    /// @dev Cermin Saku: gas compensation is configurable (default = Mezo's
+    ///      200 MUSD) so a testnet stack can use faucet-sized troves.
+    address public immutable owner = msg.sender;
+    uint256 public gasComp = 200e18;
+
+    function setGasComp(uint256 gasComp_) external {
+        require(msg.sender == owner, "MockBO: not owner");
+        gasComp = gasComp_;
+    }
+
     constructor(address musd_, address troveManager_) {
         musd = MockMUSD(musd_);
         troveManager = MockTroveManager(troveManager_);
@@ -63,7 +73,6 @@ contract MockBorrowerOperations is IBorrowerOperations {
 
         // Mirror Mezo: caller burns (debt − GAS_COMP); the gas-pool's 200 MUSD
         // is conceptually burned separately and isn't taken from the caller.
-        uint256 gasComp = 200e18;
         if (debt > gasComp) musd.burn(msg.sender, debt - gasComp);
         troveManager.adjustTrove(msg.sender, -int256(coll), -int256(debt));
 

@@ -13,15 +13,34 @@ import {ISavingsVault} from "./interfaces/mezo/ISavingsVault.sol";
 /// @title CerminVault — per-user wrapper around a single Mezo trove
 /// @notice Deployed once, cloned per user via EIP-1167. Holds one trove plus a
 ///         spendable MUSD bucket and an sMUSD position.
+/// @dev    v1.1 (Cermin Saku): adds delegated spending for scheduled allowances.
+///         The owner grants a spender (the CerminSaku contract) a capped
+///         allowance; every delegated payment is re-checked against the live
+///         price and refused unless the position is healthy AND the reserve
+///         left behind could still fund defend() after a simulated crash.
+///         Min debt / gas compensation are deploy-time immutables so the same
+///         code fits CDPs with different minimums (Mezo: 2,000 / 200 MUSD).
 contract CerminVault is ICerminVault {
     using SafeERC20 for IERC20;
 
     uint256 private constant BASIS_POINTS = 10_000;
     uint256 private constant ICR_PRECISION = 1e18;
     uint256 private constant PRICE_PRECISION = 1e18;
-    uint256 private constant MIN_MUSD_DEBT = 2_000e18;
-    uint256 private constant GAS_COMP = 200e18;
     uint256 private constant DEFEND_OVERSHOOT_BPS = 2_000;
+
+    // Cermin Saku policy bounds. The owner may tighten the policy, never
+    // remove it: a delegated payment always keeps a margin above defendICR.
+    uint16 public constant MIN_FLOOR_BUFFER_BPS = 500;       // +5 pts above defendICR
+    uint16 public constant MAX_FLOOR_BUFFER_BPS = 5_000;     // +50 pts
+    uint16 public constant MIN_STRESS_BPS = 1_000;           // must survive at least a 10% drop
+    uint16 public constant MAX_STRESS_BPS = 7_000;           // up to a 70% drop
+    uint16 public constant DEFAULT_FLOOR_BUFFER_BPS = 1_000; // +10 pts
+    uint16 public constant DEFAULT_STRESS_BPS = 3_000;       // 30% crash
+
+    /// @notice Minimum trove debt enforced at open (CDP rule; Mezo = 2,000 MUSD).
+    uint256 public immutable MIN_DEBT;
+    /// @notice Gas compensation the CDP keeps in its gas pool (Mezo = 200 MUSD).
+    uint256 public immutable GAS_COMP;
 
     address public immutable BORROWER_OPS;
     address public immutable TROVE_MANAGER;
@@ -36,6 +55,10 @@ contract CerminVault is ICerminVault {
 
     VaultParams private _params;
     VaultState private _state;
+
+    // ── v1.1 storage (appended; clones start empty) ──
+    mapping(address spender => uint256 cap) private _spendAllowance;
+    SakuPolicy private _sakuPolicy;
 
     modifier nonReentrant() {
         if (_locked == 1) revert Reentrancy();
@@ -59,8 +82,13 @@ contract CerminVault is ICerminVault {
         address troveManager_,
         address priceFeed_,
         address musd_,
-        address savingsVault_
+        address savingsVault_,
+        uint256 minDebt_,
+        uint256 gasComp_
     ) {
+        if (gasComp_ >= minDebt_) revert InvalidParams();
+        MIN_DEBT = minDebt_;
+        GAS_COMP = gasComp_;
         BORROWER_OPS = borrowerOps_;
         TROVE_MANAGER = troveManager_;
         PRICE_FEED = priceFeed_;
@@ -81,6 +109,7 @@ contract CerminVault is ICerminVault {
         _owner = owner_;
         _params = params_;
         _state.createdAt = uint64(block.timestamp);
+        _sakuPolicy = SakuPolicy(DEFAULT_FLOOR_BUFFER_BPS, DEFAULT_STRESS_BPS);
     }
 
     /// @inheritdoc ICerminVault
@@ -96,7 +125,7 @@ contract CerminVault is ICerminVault {
 
         uint256 price = IPriceFeed(PRICE_FEED).fetchPrice();
         uint256 borrowAmount = (msg.value * price * _params.targetLTV) / (PRICE_PRECISION * BASIS_POINTS);
-        if (borrowAmount < MIN_MUSD_DEBT) revert MinDebtNotMet();
+        if (borrowAmount < MIN_DEBT) revert MinDebtNotMet();
         if (maxBorrow != 0 && borrowAmount > maxBorrow) revert BorrowExceedsCap();
 
         IBorrowerOperations(BORROWER_OPS).openTrove{value: msg.value}(borrowAmount, upperHint, lowerHint);
@@ -258,6 +287,67 @@ contract CerminVault is ICerminVault {
         emit Defended(icrBefore, icrAfter, needRepay, fromVault, fromSpendable);
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Cermin Saku — delegated, safety-gated spending (v1.1)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /// @inheritdoc ICerminVault
+    function setSpendAllowance(address spender, uint256 cap) external override whenInitialized onlyOwner {
+        _spendAllowance[spender] = cap;
+        emit SpendAllowanceSet(spender, cap);
+    }
+
+    /// @inheritdoc ICerminVault
+    function setSakuPolicy(uint16 floorBufferBps, uint16 stressBps) external override whenInitialized onlyOwner {
+        if (floorBufferBps < MIN_FLOOR_BUFFER_BPS || floorBufferBps > MAX_FLOOR_BUFFER_BPS) {
+            revert InvalidSakuPolicy();
+        }
+        if (stressBps < MIN_STRESS_BPS || stressBps > MAX_STRESS_BPS) revert InvalidSakuPolicy();
+        _sakuPolicy = SakuPolicy(floorBufferBps, stressBps);
+        emit SakuPolicySet(floorBufferBps, stressBps);
+    }
+
+    /// @inheritdoc ICerminVault
+    /// @dev Pays from the spendable bucket only — savings stay as the defense
+    ///      reserve. Reverts with SakuBlocked(status) unless every gate passes
+    ///      at the live price. Collateral is never touched.
+    function withdrawSpendableFor(uint256 amount, address recipient)
+        external
+        override
+        whenInitialized
+        nonReentrant
+    {
+        uint256 price = IPriceFeed(PRICE_FEED).fetchPrice();
+        (SakuStatus status, uint256 icrBps,,) = _sakuStatus(msg.sender, amount, price);
+        if (status != SakuStatus.Ok) revert SakuBlocked(status);
+
+        unchecked {
+            _spendAllowance[msg.sender] -= amount;
+            _state.spendableMusd -= amount;
+        }
+        _state.lastSeenPrice = price;
+        IERC20(MUSD).safeTransfer(recipient, amount);
+        emit SpendableWithdrawnFor(msg.sender, recipient, amount, icrBps);
+    }
+
+    /// @inheritdoc ICerminVault
+    function sakuStatus(address spender, uint256 amount, uint256 price)
+        external
+        view
+        override
+        returns (SakuStatus status, uint256 icrBps, uint256 reserveAfter, uint256 reserveNeeded)
+    {
+        return _sakuStatus(spender, amount, price);
+    }
+
+    function spendAllowance(address spender) external view override returns (uint256) {
+        return _spendAllowance[spender];
+    }
+
+    function sakuPolicy() external view override returns (SakuPolicy memory) {
+        return _sakuPolicy;
+    }
+
     /// @notice ICR at the last cached price. Open / skim / defend each refresh
     ///         the cache. Returns 0 before open. Mezo's oracle reverts under
     ///         STATICCALL so a view function cannot read it live.
@@ -290,6 +380,41 @@ contract CerminVault is ICerminVault {
 
     function owner() external view override returns (address) {
         return _owner;
+    }
+
+    /// @dev Pure safety math at a given price. Gate order: allowance,
+    ///      spendable, health floor, crash reserve. The reserve rule mirrors
+    ///      defend(): the repay needed to bring ICR back to defendICR if the
+    ///      price fell by `stressBps`, funded from spendable-left + savings.
+    function _sakuStatus(address spender, uint256 amount, uint256 price)
+        private
+        view
+        returns (SakuStatus status, uint256 icrBps, uint256 reserveAfter, uint256 reserveNeeded)
+    {
+        uint256 spendable = _state.spendableMusd;
+        reserveAfter = (amount <= spendable ? spendable - amount : 0) + _state.smusdShares;
+
+        SakuPolicy memory pol = _sakuPolicy;
+        uint256 debt = ITroveManager(TROVE_MANAGER).getTroveDebt(address(this));
+        // No debt (never opened or closed): nothing to defend, ICR unbounded.
+        icrBps = debt == 0 ? type(uint256).max : _icrBps(price);
+        if (debt > 0) {
+            uint256 coll = ITroveManager(TROVE_MANAGER).getTroveColl(address(this));
+            uint256 stressedPrice = (price * (BASIS_POINTS - pol.stressBps)) / BASIS_POINTS;
+            uint256 targetDebt =
+                (coll * stressedPrice * BASIS_POINTS) / (uint256(_params.defendICR) * PRICE_PRECISION);
+            reserveNeeded = debt > targetDebt ? debt - targetDebt : 0;
+        }
+
+        if (amount > _spendAllowance[spender]) {
+            return (SakuStatus.AllowanceExceeded, icrBps, reserveAfter, reserveNeeded);
+        }
+        if (amount > spendable) return (SakuStatus.InsufficientSpendable, icrBps, reserveAfter, reserveNeeded);
+        if (icrBps < uint256(_params.defendICR) + pol.floorBufferBps) {
+            return (SakuStatus.IcrBelowFloor, icrBps, reserveAfter, reserveNeeded);
+        }
+        if (reserveAfter < reserveNeeded) return (SakuStatus.ReserveTooThin, icrBps, reserveAfter, reserveNeeded);
+        return (SakuStatus.Ok, icrBps, reserveAfter, reserveNeeded);
     }
 
     function _allocateBorrowed(uint256 amount) private returns (uint256 toSpendable, uint256 toVault) {

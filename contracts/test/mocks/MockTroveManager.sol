@@ -5,7 +5,11 @@ import {ITroveManager} from "../../src/interfaces/mezo/ITroveManager.sol";
 
 /// @notice Coordinated mock — MockBorrowerOperations writes here so tests don't need
 ///         to keep two copies of trove state in sync.
+/// @dev    Cermin Saku: the admin setters are deployer-only (they were open,
+///         so anyone could rewrite any trove on a public testnet).
 contract MockTroveManager is ITroveManager {
+    address public immutable owner = msg.sender;
+
     mapping(address => uint256) public collateral;
     mapping(address => uint256) public debt;
 
@@ -17,11 +21,13 @@ contract MockTroveManager is ITroveManager {
     }
 
     function setBorrowerOps(address borrowerOps_) external {
+        require(msg.sender == owner, "MockTM: not owner");
         borrowerOps = borrowerOps_;
     }
 
     /// @dev Direct setter for tests that want to bypass BorrowerOperations.
     function setTrove(address borrower, uint256 coll, uint256 debt_) external {
+        require(msg.sender == owner, "MockTM: not owner");
         collateral[borrower] = coll;
         debt[borrower] = debt_;
     }

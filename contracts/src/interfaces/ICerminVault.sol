@@ -22,12 +22,34 @@ interface ICerminVault {
         uint64  createdAt;
     }
 
+    /// @notice Cermin Saku safety policy for delegated (third-party) spending.
+    /// @dev A delegated payment is refused unless BOTH gates pass at the live price:
+    ///      1. ICR >= defendICR + floorBufferBps            (health gate)
+    ///      2. spendable-after + savings >= the repay that defend() would need
+    ///         to restore defendICR after a `stressBps` price drop  (crash-reserve gate)
+    struct SakuPolicy {
+        uint16 floorBufferBps;  // bps added on top of defendICR; >= MIN_FLOOR_BUFFER_BPS
+        uint16 stressBps;       // simulated price drop the reserve must survive
+    }
+
+    /// @notice Result of a Saku safety check. `Ok` is the only status that pays.
+    enum SakuStatus {
+        Ok,
+        AllowanceExceeded,
+        InsufficientSpendable,
+        IcrBelowFloor,
+        ReserveTooThin
+    }
+
     event VaultOpened(address indexed owner, VaultParams params);
     event Skimmed(uint256 priceAtSkim, uint256 toSpendable, uint256 toVault, uint256 newDebt);
     event Defended(uint256 icrBefore, uint256 icrAfter, uint256 repaid, uint256 fromVault, uint256 fromSpendable);
     event SpendableWithdrawn(address indexed recipient, uint256 amount);
     event CollateralAdded(uint256 amount);
     event Closed(uint256 btcReturned, uint256 musdRemainder);
+    event SpendAllowanceSet(address indexed spender, uint256 cap);
+    event SakuPolicySet(uint16 floorBufferBps, uint16 stressBps);
+    event SpendableWithdrawnFor(address indexed spender, address indexed recipient, uint256 amount, uint256 icrBps);
 
     error AlreadyInitialized();
     error NotInitialized();
@@ -44,6 +66,8 @@ interface ICerminVault {
     error EthTransferFailed();
     error Reentrancy();
     error NoDefenseProgress();
+    error SakuBlocked(SakuStatus status);
+    error InvalidSakuPolicy();
 
     function initialize(address owner_, VaultParams calldata params_) external;
 
@@ -55,6 +79,17 @@ interface ICerminVault {
 
     function skim(address upperHint, address lowerHint) external;
     function defend(address upperHint, address lowerHint) external;
+
+    // ── Cermin Saku (v1.1): delegated, safety-gated spending ──────────────
+    function setSpendAllowance(address spender, uint256 cap) external;
+    function setSakuPolicy(uint16 floorBufferBps, uint16 stressBps) external;
+    function withdrawSpendableFor(uint256 amount, address recipient) external;
+    function spendAllowance(address spender) external view returns (uint256);
+    function sakuPolicy() external view returns (SakuPolicy memory);
+    function sakuStatus(address spender, uint256 amount, uint256 price)
+        external
+        view
+        returns (SakuStatus status, uint256 icrBps, uint256 reserveAfter, uint256 reserveNeeded);
 
     function getICR() external view returns (uint256);
     function getDebt() external view returns (uint256);

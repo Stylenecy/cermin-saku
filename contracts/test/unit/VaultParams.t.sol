@@ -23,9 +23,12 @@ contract VaultParamsTest is Test {
         MockTroveManager troveManager = new MockTroveManager();
         MockBorrowerOperations bo = new MockBorrowerOperations(address(musd), address(troveManager));
         troveManager.setBorrowerOps(address(bo));
+        musd.setMinter(address(bo), true);
         MockPriceFeed price = new MockPriceFeed(100_000e18);
         MockSavingsVault sv = new MockSavingsVault(address(musd));
-        impl = new CerminVault(address(bo), address(troveManager), address(price), address(musd), address(sv));
+        impl = new CerminVault(
+            address(bo), address(troveManager), address(price), address(musd), address(sv), 2_000e18, 200e18
+        );
         factory = new CerminFactory(address(impl));
     }
 

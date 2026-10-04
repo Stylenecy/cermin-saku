@@ -4,6 +4,8 @@ pragma solidity 0.8.33;
 import {Script, console2} from "forge-std/Script.sol";
 import {CerminVault} from "../src/CerminVault.sol";
 import {CerminFactory} from "../src/CerminFactory.sol";
+import {CerminSaku} from "../src/CerminSaku.sol";
+import {CerminLens} from "../src/CerminLens.sol";
 import {ChainlinkPriceFeedAdapter} from "../src/oracles/ChainlinkPriceFeedAdapter.sol";
 import {MockSavingsVault} from "../test/mocks/MockSavingsVault.sol";
 import {MockMUSD} from "../test/mocks/MockMUSD.sol";
@@ -11,86 +13,135 @@ import {MockTroveManager} from "../test/mocks/MockTroveManager.sol";
 import {MockBorrowerOperations} from "../test/mocks/MockBorrowerOperations.sol";
 import {MockPriceFeed} from "../test/mocks/MockPriceFeed.sol";
 
-/// @title Deploy — CerminVault impl + CerminFactory to BNB Chain (BSC testnet 97 / mainnet 56)
-/// @notice Mezo (the original CDP backend) does not exist on BNB Chain. Every
-///         CDP singleton is read from env; any that is unset is replaced by the
-///         Liquity-style mock stack from `test/mocks` so the full Cermin flow
-///         (open → skim → defend → close) runs on BSC testnet with native tBNB
-///         as collateral. See `.env.example` and `../MIGRATION-BNB.md`.
+/// @title Deploy — Cermin Saku stack to BNB Chain (BSC testnet 97 / local Anvil)
+/// @notice Deploys CerminVault v1.1 impl + CerminFactory + CerminSaku + CerminLens.
+///         Mezo (Cermin's original CDP) does not exist on BNB Chain; any CDP
+///         singleton not given in env is replaced by the Liquity-style mock
+///         stack from `test/mocks` (native BNB as collateral).
+///
+///         Min debt / gas compensation are deploy-time settings. Mezo uses
+///         2,000 / 200 MUSD (the default). The testnet demo uses a smaller
+///         pair so a faucet-sized trove works at a realistic BNB price.
 ///
 ///         Usage:
-///           cp .env.example .env && source .env
-///           forge script script/Deploy.s.sol:Deploy \
-///             --rpc-url bsc_testnet --private-key $PRIVATE_KEY --broadcast \
-///             --verify --etherscan-api-key $BSCSCAN_API_KEY
+///           forge script script/Deploy.s.sol:Deploy --rpc-url bsc_testnet --broadcast
+///         (PRIVATE_KEY from env; never passed on the command line.)
 contract Deploy is Script {
+    struct Stack {
+        address borrowerOps;
+        address troveManager;
+        address priceFeed;
+        address musd;
+        address savingsVault;
+        address impl;
+        address factory;
+        address saku;
+        address lens;
+        string feedKind;
+        bool mockCdp;
+        uint256 minDebt;
+        uint256 gasComp;
+    }
+
     function run() external {
-        address borrowerOps  = vm.envOr("CDP_BORROWER_OPS", address(0));
-        address troveManager = vm.envOr("CDP_TROVE_MANAGER", address(0));
-        address priceFeed    = vm.envOr("CDP_PRICE_FEED", address(0));
-        address musd         = vm.envOr("CDP_MUSD", address(0));
-        address savingsVault = vm.envOr("CDP_SAVINGS_VAULT", address(0));
-        address chainlinkFeed = vm.envOr("CHAINLINK_BNB_USD_FEED", address(0));
-        uint256 mockPrice    = vm.envOr("MOCK_BNB_PRICE", uint256(600e18));
-        // BSC mainnet BNB/USD updates every ~30s; the testnet feed only ~hourly
-        // (observed gaps up to 3603s), so 1h would intermittently revert there.
-        uint256 maxStaleness =
-            vm.envOr("CHAINLINK_MAX_STALENESS", block.chainid == 97 ? uint256(2 hours) : uint256(1 hours));
+        Stack memory d;
+        d.borrowerOps = vm.envOr("CDP_BORROWER_OPS", address(0));
+        d.troveManager = vm.envOr("CDP_TROVE_MANAGER", address(0));
+        d.priceFeed = vm.envOr("CDP_PRICE_FEED", address(0));
+        d.musd = vm.envOr("CDP_MUSD", address(0));
+        d.savingsVault = vm.envOr("CDP_SAVINGS_VAULT", address(0));
+        d.minDebt = vm.envOr("MIN_DEBT", uint256(2_000e18));
+        d.gasComp = vm.envOr("GAS_COMP", uint256(200e18));
+        d.feedKind = "explicit";
 
         uint256 pk = vm.envUint("PRIVATE_KEY");
-        address deployer = vm.addr(pk);
-
-        console2.log("Deployer:    ", deployer);
-        console2.log("Chain ID:    ", block.chainid);
+        console2.log("Deployer:", vm.addr(pk));
+        console2.log("Chain ID:", block.chainid);
 
         vm.startBroadcast(pk);
+        _feed(d);
+        _cdp(d);
+        d.impl = address(
+            new CerminVault(d.borrowerOps, d.troveManager, d.priceFeed, d.musd, d.savingsVault, d.minDebt, d.gasComp)
+        );
+        d.factory = address(new CerminFactory(d.impl));
+        d.saku = address(new CerminSaku(d.factory));
+        d.lens = address(new CerminLens());
+        vm.stopBroadcast();
 
-        // ── Price feed: explicit > Chainlink adapter > owner-settable mock ──
-        if (priceFeed == address(0)) {
-            if (chainlinkFeed != address(0)) {
-                priceFeed = address(new ChainlinkPriceFeedAdapter(chainlinkFeed, maxStaleness));
-                console2.log("ChainlinkPriceFeedAdapter:", priceFeed);
-            } else {
-                priceFeed = address(new MockPriceFeed(mockPrice));
-                console2.log("MockPriceFeed (BNB/USD):", priceFeed);
-            }
+        _log(d);
+        _write(d, vm.addr(pk));
+    }
+
+    /// Price feed: explicit > Chainlink adapter > owner-settable mock.
+    function _feed(Stack memory d) internal {
+        if (d.priceFeed != address(0)) return;
+        address chainlinkFeed = vm.envOr("CHAINLINK_BNB_USD_FEED", address(0));
+        if (chainlinkFeed != address(0)) {
+            uint256 maxStaleness =
+                vm.envOr("CHAINLINK_MAX_STALENESS", block.chainid == 97 ? uint256(2 hours) : uint256(1 hours));
+            d.priceFeed = address(new ChainlinkPriceFeedAdapter(chainlinkFeed, maxStaleness));
+            d.feedKind = "ChainlinkPriceFeedAdapter";
+        } else {
+            d.priceFeed = address(new MockPriceFeed(vm.envOr("MOCK_BNB_PRICE", uint256(600e18))));
+            d.feedKind = "MockPriceFeed";
         }
+    }
 
-        // ── CDP stack: no Mezo on BNB Chain -> deploy the mock trove stack ──
-        if (borrowerOps == address(0) || troveManager == address(0) || musd == address(0)) {
+    /// CDP stack: no Mezo on BNB Chain -> deploy the mock trove stack.
+    function _cdp(Stack memory d) internal {
+        if (d.borrowerOps == address(0) || d.troveManager == address(0) || d.musd == address(0)) {
             require(
-                borrowerOps == address(0) && troveManager == address(0) && musd == address(0),
+                d.borrowerOps == address(0) && d.troveManager == address(0) && d.musd == address(0),
                 "Set all of CDP_BORROWER_OPS/CDP_TROVE_MANAGER/CDP_MUSD or none"
             );
             MockMUSD m = new MockMUSD();
             MockTroveManager tm = new MockTroveManager();
             MockBorrowerOperations bo = new MockBorrowerOperations(address(m), address(tm));
             tm.setBorrowerOps(address(bo));
-            musd = address(m);
-            troveManager = address(tm);
-            borrowerOps = address(bo);
-            console2.log("MockMUSD:              ", musd);
-            console2.log("MockTroveManager:      ", troveManager);
-            console2.log("MockBorrowerOperations:", borrowerOps);
+            m.setMinter(address(bo), true);
+            bo.setGasComp(d.gasComp);
+            d.musd = address(m);
+            d.troveManager = address(tm);
+            d.borrowerOps = address(bo);
+            d.mockCdp = true;
         }
+        if (d.savingsVault == address(0)) d.savingsVault = address(new MockSavingsVault(d.musd));
+    }
 
-        if (savingsVault == address(0)) {
-            savingsVault = address(new MockSavingsVault(musd));
-            console2.log("MockSavingsVault:", savingsVault);
-        }
+    function _log(Stack memory d) internal pure {
+        console2.log("CerminFactory:", d.factory);
+        console2.log("CerminVault impl:", d.impl);
+        console2.log("CerminSaku:", d.saku);
+        console2.log("CerminLens:", d.lens);
+        console2.log("PriceFeed:", d.priceFeed, d.feedKind);
+        console2.log("MUSD:", d.musd);
+        console2.log("SavingsVault:", d.savingsVault);
+        console2.log("TroveManager:", d.troveManager);
+        console2.log("BorrowerOperations:", d.borrowerOps);
+    }
 
-        CerminVault impl = new CerminVault(borrowerOps, troveManager, priceFeed, musd, savingsVault);
-        CerminFactory factory = new CerminFactory(address(impl));
-
-        vm.stopBroadcast();
-
-        console2.log("\n=== DEPLOY DONE ===");
-        console2.log("CerminVault impl:", address(impl));
-        console2.log("CerminFactory:   ", address(factory));
-        console2.log("\nCopy into agent/.env and frontend/.env:");
-        console2.log("CERMIN_FACTORY_ADDRESS=%s", address(factory));
-        console2.log("PRICE_FEED_ADDRESS=%s", priceFeed);
-        console2.log("MUSD_ADDRESS=%s", musd);
-        console2.log("SAVINGS_VAULT_ADDRESS=%s", savingsVault);
+    function _write(Stack memory d, address deployer) internal {
+        string memory outFile = vm.envOr("DEPLOY_OUT", string(""));
+        if (bytes(outFile).length == 0) return;
+        string memory j = "deploy";
+        vm.serializeUint(j, "chainId", block.chainid);
+        vm.serializeAddress(j, "deployer", deployer);
+        vm.serializeUint(j, "deployBlock", block.number);
+        vm.serializeString(j, "priceFeedKind", d.feedKind);
+        vm.serializeBool(j, "mockCdp", d.mockCdp);
+        vm.serializeUint(j, "minDebt", d.minDebt);
+        vm.serializeUint(j, "gasComp", d.gasComp);
+        vm.serializeAddress(j, "CerminFactory", d.factory);
+        vm.serializeAddress(j, "CerminVaultImpl", d.impl);
+        vm.serializeAddress(j, "CerminSaku", d.saku);
+        vm.serializeAddress(j, "CerminLens", d.lens);
+        vm.serializeAddress(j, "PriceFeed", d.priceFeed);
+        vm.serializeAddress(j, "MUSD", d.musd);
+        vm.serializeAddress(j, "SavingsVault", d.savingsVault);
+        vm.serializeAddress(j, "TroveManager", d.troveManager);
+        string memory out = vm.serializeAddress(j, "BorrowerOperations", d.borrowerOps);
+        vm.writeJson(out, outFile);
+        console2.log("Wrote", outFile);
     }
 }
