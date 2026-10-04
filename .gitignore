@@ -1,0 +1,58 @@
+# Foundry
+contracts/cache/
+contracts/out/
+contracts/broadcast/
+contracts/lib/
+
+# Node
+node_modules/
+.next/
+.turbo/
+.vercel/
+
+# Env
+.env
+.env.local
+*.env
+
+# Wallet / secrets — never commit any of these
+.deployer-wallet*
+.wallet*
+*.pem
+*.key
+keystore/
+.keystores/
+
+# Local dev scratch — diagrams, notes, throwaway scripts
+dev/
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Frontend build
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+
+# Agent
+agent/node_modules/
+agent/dist/
+agent/data/
+
+# Demo video (Remotion) — local-only, never pushed
+video/
+
+# Installed agent skills (Remotion best-practices etc.)
+.agents/
+skills-lock.json
+
+# Local-only submission artifacts (kept on disk, never published)
+Cermin-Pitch-Deck.pptx
+SUBMISSION.txt
+
+# Internal docs kept local, intentionally not in the public repo
+BLUEPRINT.md
+CLAUDE.md

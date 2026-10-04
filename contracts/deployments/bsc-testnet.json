@@ -1,0 +1,17 @@
+{
+  "chainId": 97,
+  "network": "bsc-testnet",
+  "deployer": "0x5856C41047731b765Ca75a6E04Af9415516d1c38",
+  "deployBlock": 132984106,
+  "priceFeedKind": "MockPriceFeed (owner-settable; initial $120,000/BNB so a <=0.05 tBNB vault clears the 2,000 MUSD min debt)",
+  "contracts": {
+    "CerminFactory": "0x4A832Cf199B236ecE52c7AFC50F355d0a1eB1930",
+    "CerminVaultImpl": "0x930403144279aF3E980621765Fb5d6d5A28a2667",
+    "MockPriceFeed": "0xf59178E78ED1056ACD16d0a4968713fFe028da5F",
+    "MockMUSD": "0x3Bffc923F1e4636fE8E09a76b2bfc57AD27A3007",
+    "MockTroveManager": "0xb63bDC5bEBD4Abd24530Fb7cd2d4f34A8FCD52D7",
+    "MockBorrowerOperations": "0x2f7D1bB2622Fd1F47E6581E4a6fCD952b9FC16Bc",
+    "MockSavingsVault": "0x719049BecbA18f255c5Da01E9653013313C66F85"
+  },
+  "smokeVault": "0x11d157eec22340C651b268F0884683aCff47CD75"
+}

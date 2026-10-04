@@ -1,0 +1,8 @@
+VaultParamsTest:testFuzz_ValidParamsAccepted(uint16,uint16,uint16,uint16,uint16) (runs: 256, μ: 226298, ~: 1591)
+VaultParamsTest:test_DefendIcrNotAboveEmergency() (gas: 137640)
+VaultParamsTest:test_DefendIcrTooCloseToOpenIcr() (gas: 137881)
+VaultParamsTest:test_EmergencyIcrBelowFloor() (gas: 137601)
+VaultParamsTest:test_SkimThresholdOutOfRange() (gas: 267996)
+VaultParamsTest:test_SpendableShareTooHigh() (gas: 137812)
+VaultParamsTest:test_TargetLtvAboveCeiling() (gas: 137168)
+VaultParamsTest:test_TargetLtvBelowFloor() (gas: 137464)

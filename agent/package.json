@@ -1,0 +1,29 @@
+{
+  "name": "cermin-agent",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "rm -rf dist && tsc",
+    "start": "node dist/index.js",
+    "lint": "tsc --noEmit",
+    "test": "node --import tsx --test \"src/**/*.test.ts\""
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "viem": "^2.21.0",
+    "pino": "^9.5.0",
+    "pino-pretty": "^13.0.0",
+    "better-sqlite3": "^11.6.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
