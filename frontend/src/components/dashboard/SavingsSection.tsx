@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import type { DepositPhase } from "@/hooks/useSavingsActions";
+import { formatIdr, useUsdIdr } from "@/lib/idr";
+import { useLang } from "@/lib/i18n";
 import { PiggyBank, TrendingUp, Sparkles, Layers } from "lucide-react";
 
 const usd2 = (n: number) =>
@@ -32,6 +34,7 @@ interface SavingsSectionProps {
 }
 
 export function SavingsSection(p: SavingsSectionProps) {
+  const { t } = useLang();
   const tvl = Number(p.poolTvl) / 1e18;
   const vaultVal = Number(p.vaultSavings) / 1e18;
   const vaultPrin = Number(p.vaultPrincipal) / 1e18;
@@ -47,7 +50,9 @@ export function SavingsSection(p: SavingsSectionProps) {
       <div className="flex items-center gap-3 mb-5">
         <div className="inline-flex items-center gap-2.5 rounded-full border border-cream-300 bg-surface/70 backdrop-blur px-3 py-1.5">
           <PiggyBank className="w-3.5 h-3.5 text-amber-500" />
-          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink">MUSD Savings</span>
+          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink">
+            {t("Tabungan MUSD", "MUSD Savings")}
+          </span>
           <span className="w-px h-3 bg-cream-400" />
           <span className="font-mono text-[11px] text-muted-2">1 pool · sMUSD</span>
         </div>
@@ -81,6 +86,8 @@ export function SavingsSection(p: SavingsSectionProps) {
 
 /* ── Pool overview ──────────────────────────────────────────────────────── */
 function PoolCard({ tvl, aprPct, sharePct }: { tvl: number; aprPct: number; sharePct: number }) {
+  const { t } = useLang();
+  const { rate } = useUsdIdr();
   return (
     <Card glow className="relative overflow-hidden flex flex-col">
       <svg
@@ -97,8 +104,10 @@ function PoolCard({ tvl, aprPct, sharePct }: { tvl: number; aprPct: number; shar
         <div className="flex items-center gap-2.5">
           <span className="font-mono text-xs text-amber-500 tabular-nums">A</span>
           <div>
-            <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">Savings Pool</p>
-            <p className="text-muted-2 text-xs">Savings vault · sMUSD</p>
+            <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">
+              {t("Pool tabungan", "Savings Pool")}
+            </p>
+            <p className="text-muted-2 text-xs">{t("Vault tabungan · sMUSD", "Savings vault · sMUSD")}</p>
           </div>
         </div>
         <span className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
@@ -107,12 +116,16 @@ function PoolCard({ tvl, aprPct, sharePct }: { tvl: number; aprPct: number; shar
       </div>
 
       <div className="relative">
-        <p className="text-[11px] uppercase tracking-[0.14em] text-muted-2 font-mono">Total value locked</p>
+        <p className="text-[11px] uppercase tracking-[0.14em] text-muted-2 font-mono">
+          {t("Total dana terkunci (TVL)", "Total value locked")}
+        </p>
         <AnimatedNumber
+          key={rate}
           value={tvl}
-          format={(n) => `$${usd0(n)}`}
+          format={(n) => formatIdr(n * rate)}
           className="block text-3xl font-semibold text-ink tabular-nums tracking-tight mt-1.5"
         />
+        <p className="text-xs tabular-nums text-muted mt-0.5">≈ ${usd0(tvl)}</p>
       </div>
 
       <div className="relative grid grid-cols-2 gap-px mt-5 rounded-2xl overflow-hidden bg-line/70 border border-cream-300">
@@ -121,14 +134,16 @@ function PoolCard({ tvl, aprPct, sharePct }: { tvl: number; aprPct: number; shar
           <div className="text-sm font-semibold tabular-nums text-success mt-1">~{aprPct.toFixed(0)}%</div>
         </div>
         <div className="bg-surface px-3.5 py-3">
-          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-2 font-mono">Your share</div>
+          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-2 font-mono">{t("Bagianmu", "Your share")}</div>
           <div className="text-sm font-semibold tabular-nums text-ink mt-1">{sharePct.toFixed(2)}%</div>
         </div>
       </div>
 
       <p className="relative text-[11px] text-muted-2 mt-auto pt-4 leading-relaxed">
-        Variable — paid from protocol fees. APR shown is an estimate (testnet yield
-        is keeper-seeded).
+        {t(
+          "Bisa berubah, dibayar dari biaya protokol. APR di atas hanya perkiraan (hasil di testnet diisi oleh keeper).",
+          "Variable — paid from protocol fees. APR shown is an estimate (testnet yield is keeper-seeded).",
+        )}
       </p>
     </Card>
   );
@@ -152,14 +167,17 @@ function PositionCard({
   onClaim: () => void;
   isClaiming: boolean;
 }) {
+  const { t } = useLang();
+  const { rate } = useUsdIdr();
+  const rp = (n: number) => formatIdr(n * rate);
   return (
     <Card className="relative overflow-hidden flex flex-col">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
           <span className="font-mono text-xs text-amber-500 tabular-nums">B</span>
           <div>
-            <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">Your savings</p>
-            <p className="text-muted-2 text-xs">Earning right now</p>
+            <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">{t("Tabunganmu", "Your savings")}</p>
+            <p className="text-muted-2 text-xs">{t("Sedang menghasilkan", "Earning right now")}</p>
           </div>
         </div>
         <span className="w-8 h-8 rounded-full bg-success/12 text-success flex items-center justify-center">
@@ -169,16 +187,33 @@ function PositionCard({
 
       <div className="mb-1">
         <AnimatedNumber
+          key={rate}
           value={totalEarning}
-          format={(n) => `$${usd2(n)}`}
+          format={(n) => formatIdr(n * rate)}
           className="block text-3xl font-semibold text-ink tabular-nums tracking-tight"
         />
-        <p className="text-sm text-muted-2 mt-1">sMUSD across both positions</p>
+        <p className="text-sm text-muted-2 mt-1">
+          <span className="tabular-nums text-muted">≈ ${usd2(totalEarning)}</span> ·{" "}
+          {t("sMUSD dari kedua posisi", "sMUSD across both positions")}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-px mt-4 rounded-2xl overflow-hidden bg-line/70 border border-cream-300">
-        <Line label="In your vault (auto)" value={`$${usd2(vaultVal)}`} sub={`+$${usd2(vaultYield)} yield`} />
-        <Line label="Direct deposits (you)" value={`$${usd2(userPrin)}`} sub={userYield > 0 ? `+$${usd2(userYield)} claimable` : "no yield yet"} subAccent={userYield > 0 ? "text-success" : undefined} />
+        <Line
+          label={t("Di vault-mu (otomatis)", "In your vault (auto)")}
+          value={rp(vaultVal)}
+          sub={`≈ $${usd2(vaultVal)} · +${rp(vaultYield)} ${t("hasil", "yield")}`}
+        />
+        <Line
+          label={t("Setoran langsung (kamu)", "Direct deposits (you)")}
+          value={rp(userPrin)}
+          sub={`≈ $${usd2(userPrin)} · ${
+            userYield > 0
+              ? `+${rp(userYield)} ${t("bisa diklaim", "claimable")}`
+              : t("belum ada hasil", "no yield yet")
+          }`}
+          subAccent={userYield > 0 ? "text-success" : undefined}
+        />
       </div>
 
       <div className="mt-auto pt-4">
@@ -191,7 +226,9 @@ function PositionCard({
           disabled={isClaiming || userYield <= 0}
         >
           <Sparkles className="w-4 h-4" />
-          {userYield > 0 ? `Claim $${usd2(userYield)} yield` : "No yield to claim"}
+          {userYield > 0
+            ? t(`Klaim hasil ${rp(userYield)}`, `Claim ${rp(userYield)} yield`)
+            : t("Belum ada hasil untuk diklaim", "No yield to claim")}
         </Button>
       </div>
     </Card>
@@ -240,6 +277,8 @@ function ManageCard({
   isDepositing: boolean;
   isWithdrawing: boolean;
 }) {
+  const { t } = useLang();
+  const { rate } = useUsdIdr();
   const [mode, setMode] = useState<"deposit" | "withdraw">("deposit");
   const [amount, setAmount] = useState("");
   const max = mode === "deposit" ? walletMusd : userShares;
@@ -247,10 +286,17 @@ function ManageCard({
   const validation = useMemo(() => {
     const v = parseFloat(amount);
     if (!amount) return { ok: false, reason: null as string | null };
-    if (isNaN(v) || v <= 0) return { ok: false, reason: "Enter a positive amount" };
-    if (v > max) return { ok: false, reason: mode === "deposit" ? "More than your wallet MUSD" : "More than you deposited" };
+    if (isNaN(v) || v <= 0) return { ok: false, reason: t("Masukkan jumlah lebih dari 0", "Enter a positive amount") };
+    if (v > max)
+      return {
+        ok: false,
+        reason:
+          mode === "deposit"
+            ? t("Melebihi MUSD di dompetmu", "More than your wallet MUSD")
+            : t("Melebihi yang sudah kamu setor", "More than you deposited"),
+      };
     return { ok: true, reason: null };
-  }, [amount, max, mode]);
+  }, [amount, max, mode, t]);
 
   const submit = () => {
     if (!validation.ok) return;
@@ -269,11 +315,12 @@ function ManageCard({
   const label =
     mode === "deposit"
       ? depositPhase === "approving"
-        ? "Approving MUSD…"
+        ? t("Menyetujui MUSD…", "Approving MUSD…")
         : depositPhase === "depositing"
-          ? "Depositing…"
-          : "Deposit to savings"
-      : "Withdraw";
+          ? t("Menyetor…", "Depositing…")
+          : t("Setor ke tabungan", "Deposit to savings")
+      : t("Tarik", "Withdraw");
+  const unit = mode === "deposit" ? "MUSD" : "sMUSD";
 
   return (
     <Card className="relative overflow-hidden flex flex-col">
@@ -281,8 +328,10 @@ function ManageCard({
         <div className="flex items-center gap-2.5">
           <span className="font-mono text-xs text-amber-500 tabular-nums">C</span>
           <div>
-            <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">Manual LP</p>
-            <p className="text-muted-2 text-xs">Direct to the savings vault</p>
+            <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">
+              {t("Setor manual (LP)", "Manual LP")}
+            </p>
+            <p className="text-muted-2 text-xs">{t("Langsung ke vault tabungan", "Direct to the savings vault")}</p>
           </div>
         </div>
       </div>
@@ -295,11 +344,12 @@ function ManageCard({
               setMode(m);
               setAmount("");
             }}
+            aria-pressed={mode === m}
             className={`px-3.5 h-8 rounded-full text-xs font-medium capitalize transition-all ${
               mode === m ? "bg-ink text-white shadow-sm" : "text-muted hover:text-ink"
             }`}
           >
-            {m}
+            {m === "deposit" ? t("Setor", "Deposit") : t("Tarik", "Withdraw")}
           </button>
         ))}
       </div>
@@ -309,7 +359,8 @@ function ManageCard({
           <input
             type="number"
             inputMode="decimal"
-            placeholder={`Amount (${mode === "deposit" ? "MUSD" : "sMUSD"})`}
+            placeholder={t(`Jumlah (${unit})`, `Amount (${unit})`)}
+            aria-label={t(`Jumlah (${unit})`, `Amount (${unit})`)}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             min={0}
@@ -320,12 +371,14 @@ function ManageCard({
             onClick={() => setAmount(max > 0 ? String(max) : "")}
             className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono uppercase tracking-wider text-amber-600 hover:text-amber-700"
           >
-            Max
+            {t("Maks", "Max")}
           </button>
         </div>
         <div className="flex items-center justify-between text-[11px] font-mono text-muted-2">
-          <span>{mode === "deposit" ? "Wallet" : "Deposited"}</span>
-          <span className="tabular-nums">{usd2(max)} {mode === "deposit" ? "MUSD" : "sMUSD"}</span>
+          <span>{mode === "deposit" ? t("Dompet", "Wallet") : t("Sudah disetor", "Deposited")}</span>
+          <span className="tabular-nums">
+            {formatIdr(max * rate)} <span className="text-muted">· {usd2(max)} {unit}</span>
+          </span>
         </div>
         {validation.reason && <p className="text-[11px] text-danger">{validation.reason}</p>}
       </div>
@@ -342,7 +395,10 @@ function ManageCard({
           {label}
         </Button>
         <p className="text-[10px] text-muted-2 mt-2 leading-relaxed text-center">
-          Separate from your vault&apos;s auto-savings — sMUSD goes to your wallet.
+          {t(
+            "Terpisah dari tabungan otomatis vault-mu. sMUSD masuk ke dompetmu.",
+            "Separate from your vault's auto-savings — sMUSD goes to your wallet.",
+          )}
         </p>
       </div>
     </Card>

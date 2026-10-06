@@ -33,16 +33,35 @@ export const PRESETS: Record<RiskKey, VaultParams> = {
   },
 };
 
+/** A UI string in both languages (Bahasa Indonesia first). */
+export interface Bilingual {
+  id: string;
+  en: string;
+}
+
 // Goal is purely a UI framing — both branches use the same on-chain params.
-export const GOAL_LABELS: Record<GoalLabel, { title: string; tagline: string; badge: string }> = {
+export const GOAL_LABELS: Record<GoalLabel, { title: Bilingual; tagline: Bilingual; badge: Bilingual }> = {
   forever: {
-    title: 'Forever Allowance',
-    tagline: 'Earn sustainable yield indefinitely. BNB never sold.',
-    badge: 'Pension',
+    title: { id: "Uang Saku Selamanya", en: "Forever Allowance" },
+    tagline: {
+      id: "Hasil yang terus mengalir tanpa batas waktu. BNB tidak pernah dijual.",
+      en: "Earn sustainable yield indefinitely. BNB never sold.",
+    },
+    badge: { id: "Pensiun", en: "Pension" },
   },
   spendNow: {
-    title: 'Spend Now, Reclaim Later',
-    tagline: 'Borrow MUSD against BNB; repay it on your timeline.',
-    badge: 'Goal',
+    title: { id: "Pakai Sekarang, Lunasi Nanti", en: "Spend Now, Reclaim Later" },
+    tagline: {
+      id: "Pinjam MUSD dengan jaminan BNB, lunasi sesuai waktumu.",
+      en: "Borrow MUSD against BNB; repay it on your timeline.",
+    },
+    badge: { id: "Target", en: "Goal" },
   },
+};
+
+// Display names for the three risk presets.
+export const RISK_LABELS: Record<RiskKey, Bilingual> = {
+  conservative: { id: "Hati-hati", en: "Conservative" },
+  balanced: { id: "Seimbang", en: "Balanced" },
+  aggressive: { id: "Berani", en: "Aggressive" },
 };

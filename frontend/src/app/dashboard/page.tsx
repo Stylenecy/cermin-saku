@@ -20,6 +20,7 @@ import { SavingsSection } from "@/components/dashboard/SavingsSection";
 import { useSavings } from "@/hooks/useSavings";
 import { useSavingsActions } from "@/hooks/useSavingsActions";
 import { formatTxError } from "@/lib/utils";
+import { useLang } from "@/lib/i18n";
 import { buttonClasses } from "@/components/ui/Button";
 import { LineShadowText } from "@/components/ui/LineShadowText";
 import { motion } from "framer-motion";
@@ -53,14 +54,20 @@ function DashboardSkeleton() {
 }
 
 function ErrorState() {
+  const { t } = useLang();
   return (
     <div className="max-w-md mx-auto px-6 py-20 text-center">
       <div className="w-12 h-12 mx-auto rounded-full bg-danger/10 flex items-center justify-center mb-4">
         <span className="text-danger text-xl">!</span>
       </div>
-      <h2 className="text-lg font-semibold text-ink">Couldn&apos;t reach BNB Chain</h2>
+      <h2 className="text-lg font-semibold text-ink">
+        {t("Tidak bisa terhubung ke BNB Chain", "Couldn't reach BNB Chain")}
+      </h2>
       <p className="text-muted text-sm mt-2">
-        Vault data failed to load. The RPC may be temporarily unavailable — retry will run automatically.
+        {t(
+          "Data vault gagal dimuat. RPC mungkin sedang tidak tersedia. Kami coba lagi otomatis.",
+          "Vault data failed to load. The RPC may be temporarily unavailable — retry will run automatically.",
+        )}
       </p>
     </div>
   );
@@ -69,30 +76,36 @@ function ErrorState() {
 // Shown when a connected user has no vault yet. The dashboard is the hub: it
 // invites you to open a position rather than silently redirecting to onboarding.
 function NoPositionState() {
+  const { t } = useLang();
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
       <div className="mb-8">
-        <h1 className="font-serif text-[1.75rem] font-medium tracking-[-0.02em] text-ink">Your Dashboard</h1>
-        <p className="text-muted text-sm mt-1">No open position yet.</p>
+        <h1 className="font-serif text-[1.75rem] font-medium tracking-[-0.02em] text-ink">
+          {t("Dashboard-mu", "Your Dashboard")}
+        </h1>
+        <p className="text-muted text-sm mt-1">{t("Belum ada posisi yang terbuka.", "No open position yet.")}</p>
       </div>
 
-      <div className="rounded-3xl border border-cream-300 bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_4px_12px_rgba(58,53,48,0.06)] p-10 md:p-16 text-center animate-rise-in">
+      <div className="rounded-3xl border border-cream-300 bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_4px_12px_rgba(14,31,56,0.06)] p-10 md:p-16 text-center animate-rise-in">
         <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-6 shadow-glow-amber animate-float">
           <Sparkles className="w-7 h-7" />
         </div>
         <h2 className="font-serif text-[1.9rem] font-medium tracking-[-0.02em] text-ink">
-          Open your <em className="italic font-normal text-amber-600">first position</em>
+          {t("Buka ", "Open your ")}
+          <em className="italic font-normal text-amber-600">{t("posisi pertamamu", "first position")}</em>
         </h2>
         <p className="text-muted text-sm mt-3 max-w-md mx-auto leading-relaxed">
-          Deposit BNB once and Cermin opens a vault on BNB Chain that pays you a dollar
-          allowance — without ever selling your BNB.
+          {t(
+            "Setor BNB sekali, lalu Cermin membuka vault di BNB Chain yang memberimu uang saku dalam dolar (MUSD), tanpa pernah menjual BNB-mu.",
+            "Deposit BNB once and Cermin opens a vault on BNB Chain that pays you a dollar allowance — without ever selling your BNB.",
+          )}
         </p>
         <div className="mt-8 flex justify-center">
           <Link
             href="/onboard"
             className={buttonClasses({ variant: "primary", size: "xl" })}
           >
-            Open a new position
+            {t("Buka posisi baru", "Open a new position")}
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -136,6 +149,7 @@ export default function DashboardPage() {
   } = useVaultActions(vaultAddress);
   const savings = useSavings();
   const savingsActions = useSavingsActions();
+  const { t } = useLang();
 
   useEffect(() => {
     if (!isConnected) router.replace("/");
@@ -178,7 +192,7 @@ export default function DashboardPage() {
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: "radial-gradient(rgba(92,84,72,0.10) 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(rgba(14,31,56,0.10) 1px, transparent 1px)",
             backgroundSize: "24px 24px",
             maskImage: "linear-gradient(to bottom, black, transparent)",
             WebkitMaskImage: "linear-gradient(to bottom, black, transparent)",
@@ -195,26 +209,33 @@ export default function DashboardPage() {
           <div className="inline-flex items-center gap-2.5 rounded-full border border-cream-300 bg-surface/70 backdrop-blur px-3 py-1.5 mb-3">
             <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${needsDefense ? "bg-warning" : "bg-success"}`} />
             <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink">
-              {needsDefense ? "Action needed" : "All systems go"}
+              {needsDefense ? t("Perlu tindakan", "Action needed") : t("Semua aman", "All systems go")}
             </span>
           </div>
           <h1 className="font-serif text-[2rem] md:text-[2.5rem] font-medium tracking-[-0.02em] text-ink leading-tight">
-            Your{" "}
-            <LineShadowText as="span" shadowColor="#C77A3A" className="text-ink">
+            {t("", "Your ")}
+            <LineShadowText as="span" shadowColor="#1E4A8F" className="text-ink">
               Vault
             </LineShadowText>
+            {t("-mu", "")}
           </h1>
           <p className="text-muted mt-2.5 text-pretty max-w-xl leading-relaxed">
             {needsDefense
-              ? "Your vault dipped below its defense line — hit Defend below to recover."
-              : "Your BNB is locked and safe. Cermin skims the peaks, defends the dips, and earns on idle dollars — automatically."}
+              ? t(
+                  "Vault-mu turun di bawah garis bela. Tekan Bela di bawah untuk memulihkannya.",
+                  "Your vault dipped below its defense line — hit Defend below to recover.",
+                )
+              : t(
+                  "BNB-mu tetap utuh dan aman. Cermin memanen saat BNB naik (skim), membela posisi saat BNB turun, dan memutar dolar yang menganggur di tabungan. Semuanya otomatis.",
+                  "Your BNB is locked and safe. Cermin skims the peaks, defends the dips, and earns on idle dollars — automatically.",
+                )}
           </p>
         </motion.div>
 
       {withdrawError && (
         <div className="mb-4 rounded-2xl bg-danger/8 border border-danger/25 px-4 py-3">
           <p className="text-xs text-danger">
-            Withdraw failed: {formatTxError(withdrawError, 200)}
+            {t("Gagal menarik:", "Withdraw failed:")} {formatTxError(withdrawError, 200)}
           </p>
         </div>
       )}
@@ -222,7 +243,7 @@ export default function DashboardPage() {
       {addCollateralError && (
         <div className="mb-4 rounded-2xl bg-danger/8 border border-danger/25 px-4 py-3">
           <p className="text-xs text-danger">
-            Add collateral failed: {formatTxError(addCollateralError, 200)}
+            {t("Gagal menambah jaminan:", "Add collateral failed:")} {formatTxError(addCollateralError, 200)}
           </p>
         </div>
       )}
@@ -230,10 +251,13 @@ export default function DashboardPage() {
       {defendError && (
         <div className="mb-4 rounded-2xl bg-danger/8 border border-danger/25 px-4 py-3">
           <p className="text-xs text-danger">
-            Defend failed: {formatTxError(defendError, 200)}
+            {t("Gagal membela posisi:", "Defend failed:")} {formatTxError(defendError, 200)}
           </p>
           <p className="text-[11px] text-muted-2 mt-1">
-            If ICR is already above the defend threshold, no defense is needed.
+            {t(
+              "Kalau ICR sudah di atas batas bela, posisi tidak perlu dibela.",
+              "If ICR is already above the defend threshold, no defense is needed.",
+            )}
           </p>
         </div>
       )}

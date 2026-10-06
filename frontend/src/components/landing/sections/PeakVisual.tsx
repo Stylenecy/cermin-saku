@@ -78,8 +78,8 @@ export function PeakVisual() {
       <svg className="absolute inset-x-0 bottom-0 w-full h-[58%]" viewBox="0 0 300 80" preserveAspectRatio="none">
         <defs>
           <linearGradient id="peakFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#C77A3A" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#C77A3A" stopOpacity="0" />
+            <stop offset="0%" stopColor="#1E4A8F" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#1E4A8F" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path
@@ -93,7 +93,7 @@ export function PeakVisual() {
           strokeDasharray={1}
           d="M0 62 L43 54 L86 58 L129 34 L172 46 L215 22 L258 34 L300 12"
           fill="none"
-          stroke="#CE8E50"
+          stroke="#3F68AB"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"

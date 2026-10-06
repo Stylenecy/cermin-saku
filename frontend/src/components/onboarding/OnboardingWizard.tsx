@@ -13,10 +13,12 @@ import { Input } from "@/components/ui/Input";
 import { Logo } from "@/components/ui/Logo";
 import { motion, AnimatePresence } from "framer-motion";
 import { EASE_OUT } from "@/lib/motion";
-import { PRESETS, GOAL_LABELS, type RiskKey, type GoalLabel } from "@/lib/presets";
+import { PRESETS, GOAL_LABELS, RISK_LABELS, type RiskKey, type GoalLabel } from "@/lib/presets";
 import { simulate } from "@/lib/simulation";
 import { CONTRACTS, CERMIN_FACTORY_ABI } from "@/lib/contracts";
 import { formatUsd, formatTxError } from "@/lib/utils";
+import { formatIdr, useUsdIdr } from "@/lib/idr";
+import { useLang } from "@/lib/i18n";
 import { EXPLORER_URL, activeChain } from "@/lib/chains";
 import {
   Coins,
@@ -60,6 +62,11 @@ function minDebtCheck(btcAmount: string, btcPriceUsd: number, targetLTV: number)
   return { borrow, meets, minBtc };
 }
 
+/** Rupiah first, dollars as the small second figure. */
+function UsdNote({ usd, decimals = 2 }: { usd: number; decimals?: number }) {
+  return <span className="ml-1 text-[0.8em] font-normal text-muted">({formatUsd(usd, decimals)})</span>;
+}
+
 function StepHeader({
   step,
   total,
@@ -69,12 +76,14 @@ function StepHeader({
   total: number;
   onBack: (() => void) | null;
 }) {
+  const { t } = useLang();
   const pct = ((step + 1) / total) * 100;
   return (
     <div className="flex items-center gap-4 mb-8">
       <button
         onClick={onBack ?? undefined}
         disabled={!onBack}
+        aria-label={t("Kembali", "Back")}
         className="w-10 h-10 rounded-full bg-surface border border-cream-300 shadow-sm flex items-center justify-center disabled:opacity-30 hover:border-amber-200 hover:-translate-y-px transition-all duration-200 active:translate-y-0"
       >
         <ArrowLeft className="w-4 h-4" />
@@ -101,6 +110,8 @@ function StepDeposit({
   onChange: (patch: Partial<WizardState>) => void;
   onNext: () => void;
 }) {
+  const { t } = useLang();
+  const { rate } = useUsdIdr();
   const usdValue = parseFloat(state.btcAmount || "0") * state.btcPriceUsd;
   const priceReady = state.btcPriceUsd > 0;
   // The lowest possible minimum is the highest-LTV preset (Aggressive). Require
@@ -112,19 +123,26 @@ function StepDeposit({
   const amountEntered = parseFloat(state.btcAmount || "0") > 0;
   const valid = amountEntered && (!priceReady || floor.meets);
   const presets = ["0.07", "0.10", "0.25", "0.50"];
+  const priceRp = formatIdr(state.btcPriceUsd * rate);
+  const priceUsd = formatUsd(state.btcPriceUsd, 0);
+  const minDebtRp = formatIdr(MIN_MUSD_DEBT * rate);
 
   return (
     <div className="space-y-7">
       <div>
         <Badge variant="amber" className="mb-3">
           <Coins className="w-3 h-3" />
-          Step 1
+          {t("Langkah 1", "Step 1")}
         </Badge>
         <h2 className="font-serif text-3xl font-medium tracking-[-0.02em] text-ink leading-tight">
-          How much BNB do you want to <em className="italic font-normal">vault</em>?
+          {t("Berapa BNB yang mau kamu ", "How much BNB do you want to ")}
+          <em className="italic font-normal">{t("taruh di vault", "vault")}</em>?
         </h2>
         <p className="text-muted text-sm mt-2">
-          Your BNB stays locked. Only the borrowed dollars get spent.
+          {t(
+            "BNB-mu tetap utuh dan terkunci. Yang dipakai hanya dolar (MUSD) hasil pinjaman.",
+            "Your BNB stays locked. Only the borrowed dollars get spent.",
+          )}
         </p>
       </div>
 
@@ -137,13 +155,18 @@ function StepDeposit({
         value={state.btcAmount}
         onChange={(e) => onChange({ btcAmount: e.target.value })}
         suffix="BNB"
+        aria-label={t("Jumlah BNB yang disetor", "Amount of BNB to deposit")}
       />
 
       {usdValue > 0 ? (
-        <p className="text-sm text-muted text-right -mt-3">≈ {formatUsd(usdValue)}</p>
+        <p className="text-sm text-muted text-right -mt-3">
+          ≈ {formatIdr(usdValue * rate)}
+          <UsdNote usd={usdValue} />
+        </p>
       ) : (
         <p className="text-sm text-muted text-right -mt-3">
-          BNB ≈ {formatUsd(state.btcPriceUsd, 0)}
+          BNB ≈ {formatIdr(state.btcPriceUsd * rate)}
+          <UsdNote usd={state.btcPriceUsd} decimals={0} /> · {t("harga simulasi", "simulated price")}
         </p>
       )}
 
@@ -152,6 +175,7 @@ function StepDeposit({
           <button
             key={p}
             onClick={() => onChange({ btcAmount: p })}
+            aria-pressed={state.btcAmount === p}
             className={`h-11 rounded-full text-sm font-medium transition-all duration-200 tabular-nums ${
               state.btcAmount === p
                 ? "bg-ink text-white shadow-soft"
@@ -165,7 +189,7 @@ function StepDeposit({
 
       {amountEntered && priceReady && !floor.meets && (
         <p className="text-xs text-amber-700 -mt-3">
-          Too small to open any vault — deposit at least{" "}
+          {t("Terlalu kecil untuk membuka vault. Setor minimal", "Too small to open any vault — deposit at least")}{" "}
           <span className="font-medium">{floor.minBtc.toFixed(4)} BNB</span>.
         </p>
       )}
@@ -174,22 +198,22 @@ function StepDeposit({
         {priceReady ? (
           <p className="text-xs text-muted leading-relaxed">
             <span className="font-medium text-ink">
-              Minimum {floor.minBtc.toFixed(4)} BNB
+              {t("Minimal", "Minimum")} {floor.minBtc.toFixed(4)} BNB
             </span>{" "}
-            to open a vault at {formatUsd(state.btcPriceUsd, 0)}/BNB. Safer
-            strategies need more: Balanced ≥ {balancedMin.toFixed(4)} BNB,
-            Conservative ≥ {conservativeMin.toFixed(4)} BNB. The CDP enforces a
-            2,000 MUSD minimum loan.
+            {t(
+              `untuk membuka vault di harga ${priceRp}/BNB (${priceUsd}, harga simulasi). Strategi yang lebih aman butuh lebih banyak: ${RISK_LABELS.balanced.id} ≥ ${balancedMin.toFixed(4)} BNB, ${RISK_LABELS.conservative.id} ≥ ${conservativeMin.toFixed(4)} BNB. CDP mewajibkan pinjaman minimal 2.000 MUSD (≈ ${minDebtRp}).`,
+              `to open a vault at ${priceRp}/BNB (${priceUsd}, simulated price). Safer strategies need more: ${RISK_LABELS.balanced.en} ≥ ${balancedMin.toFixed(4)} BNB, ${RISK_LABELS.conservative.en} ≥ ${conservativeMin.toFixed(4)} BNB. The CDP enforces a 2,000 MUSD minimum loan (≈ ${minDebtRp}).`,
+            )}
           </p>
         ) : (
           <p className="text-xs text-muted leading-relaxed">
-            Fetching live BNB price…
+            {t("Mengambil harga BNB simulasi…", "Fetching the simulated BNB price…")}
           </p>
         )}
       </Card>
 
       <Button variant="primary" size="xl" className="w-full" onClick={onNext} disabled={!valid}>
-        Continue
+        {t("Lanjut", "Continue")}
         <ArrowRight className="w-4 h-4" />
       </Button>
     </div>
@@ -205,6 +229,7 @@ function StepGoal({
   onChange: (patch: Partial<WizardState>) => void;
   onNext: () => void;
 }) {
+  const { t, lang } = useLang();
   const options: { key: GoalLabel; icon: React.ReactNode }[] = [
     { key: "forever", icon: <Shield className="w-5 h-5" /> },
     { key: "spendNow", icon: <Target className="w-5 h-5" /> },
@@ -213,12 +238,16 @@ function StepGoal({
   return (
     <div className="space-y-7">
       <div>
-        <Badge variant="amber" className="mb-3">Step 2</Badge>
+        <Badge variant="amber" className="mb-3">{t("Langkah 2", "Step 2")}</Badge>
         <h2 className="font-serif text-3xl font-medium tracking-[-0.02em] text-ink leading-tight">
-          What&apos;s your <em className="italic font-normal">goal</em>?
+          {t("Apa ", "What's your ")}
+          <em className="italic font-normal">{t("tujuanmu", "goal")}</em>?
         </h2>
         <p className="text-muted text-sm mt-2">
-          Same vault either way — this just frames the experience.
+          {t(
+            "Vault-nya sama apa pun pilihanmu. Ini cuma soal cara melihatnya.",
+            "Same vault either way — this just frames the experience.",
+          )}
         </p>
       </div>
 
@@ -230,6 +259,7 @@ function StepGoal({
             <button
               key={opt.key}
               onClick={() => onChange({ goal: opt.key })}
+              aria-pressed={selected}
               className={`w-full text-left rounded-3xl p-5 transition-all duration-200 flex items-start gap-4 ${
                 selected
                   ? "bg-ink text-white shadow-lift"
@@ -245,11 +275,11 @@ function StepGoal({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="text-base font-semibold">{meta.title}</p>
-                  <Badge variant={selected ? "amber" : "default"}>{meta.badge}</Badge>
+                  <p className="text-base font-semibold">{meta.title[lang]}</p>
+                  <Badge variant={selected ? "amber" : "default"}>{meta.badge[lang]}</Badge>
                 </div>
                 <p className={`text-sm ${selected ? "text-white/70" : "text-muted"}`}>
-                  {meta.tagline}
+                  {meta.tagline[lang]}
                 </p>
               </div>
               {selected && <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-1" />}
@@ -259,7 +289,7 @@ function StepGoal({
       </div>
 
       <Button variant="primary" size="xl" className="w-full" onClick={onNext} disabled={!state.goal}>
-        Continue <ArrowRight className="w-4 h-4" />
+        {t("Lanjut", "Continue")} <ArrowRight className="w-4 h-4" />
       </Button>
     </div>
   );
@@ -274,6 +304,7 @@ function StepRisk({
   onChange: (patch: Partial<WizardState>) => void;
   onNext: () => void;
 }) {
+  const { t, lang } = useLang();
   const options: {
     key: RiskKey;
     title: string;
@@ -284,25 +315,28 @@ function StepRisk({
   }[] = [
     {
       key: "conservative",
-      title: "Conservative",
+      title: RISK_LABELS.conservative[lang],
       ltv: "40% LTV",
-      drop: "~58% drop tolerance",
-      desc: "Lower yield, maximum protection. Perfect for BNB maxis.",
+      drop: t("tahan turun ~58%", "~58% drop tolerance"),
+      desc: t(
+        "Hasil lebih kecil, perlindungan paling tinggi. Cocok untuk pemegang BNB yang setia.",
+        "Lower yield, maximum protection. Perfect for BNB maxis.",
+      ),
     },
     {
       key: "balanced",
-      title: "Balanced",
+      title: RISK_LABELS.balanced[lang],
       ltv: "50% LTV",
-      drop: "~30% drop tolerance",
-      desc: "Optimal risk-reward balance for most users.",
-      badge: "Recommended",
+      drop: t("tahan turun ~30%", "~30% drop tolerance"),
+      desc: t("Risiko dan hasil yang seimbang untuk kebanyakan orang.", "Optimal risk-reward balance for most users."),
+      badge: t("Disarankan", "Recommended"),
     },
     {
       key: "aggressive",
-      title: "Aggressive",
+      title: RISK_LABELS.aggressive[lang],
       ltv: "70% LTV",
-      drop: "~12% drop tolerance",
-      desc: "Maximum yield, tighter safety margins.",
+      drop: t("tahan turun ~12%", "~12% drop tolerance"),
+      desc: t("Hasil paling besar, ruang aman lebih tipis.", "Maximum yield, tighter safety margins."),
     },
   ];
 
@@ -318,13 +352,18 @@ function StepRisk({
       <div>
         <Badge variant="amber" className="mb-3">
           <TrendingUp className="w-3 h-3" />
-          Step 3
+          {t("Langkah 3", "Step 3")}
         </Badge>
         <h2 className="font-serif text-3xl font-medium tracking-[-0.02em] text-ink leading-tight">
-          Pick your <em className="italic font-normal">risk profile</em>
+          {t("Pilih ", "Pick your ")}
+          <em className="italic font-normal">{t("profil risiko", "risk profile")}</em>
+          {t("-mu", "")}
         </h2>
         <p className="text-muted text-sm mt-2">
-          Sets your borrow ratio and defense thresholds.
+          {t(
+            "Menentukan rasio pinjaman dan batas kapan keeper membela posisimu.",
+            "Sets your borrow ratio and defense thresholds.",
+          )}
         </p>
       </div>
 
@@ -342,6 +381,7 @@ function StepRisk({
               key={opt.key}
               onClick={() => affordable && onChange({ risk: opt.key })}
               disabled={!affordable}
+              aria-pressed={selected}
               className={`w-full text-left rounded-3xl p-5 transition-all duration-200 ${
                 !affordable
                   ? "bg-surface-soft border border-line opacity-60 cursor-not-allowed"
@@ -370,8 +410,9 @@ function StepRisk({
               </p>
               {!affordable && (
                 <p className="text-xs text-amber-700 mt-2">
-                  Needs ≥ {check.minBtc.toFixed(4)} BNB — you entered{" "}
-                  {state.btcAmount || "0"} BNB. Go back to deposit more.
+                  {t("Butuh", "Needs")} ≥ {check.minBtc.toFixed(4)} BNB.{" "}
+                  {t("Kamu baru memasukkan", "You entered")} {state.btcAmount || "0"} BNB.{" "}
+                  {t("Kembali dan setor lebih banyak.", "Go back to deposit more.")}
                 </p>
               )}
             </button>
@@ -386,7 +427,7 @@ function StepRisk({
         onClick={onNext}
         disabled={!state.risk || !canContinue}
       >
-        Continue <ArrowRight className="w-4 h-4" />
+        {t("Lanjut", "Continue")} <ArrowRight className="w-4 h-4" />
       </Button>
     </div>
   );
@@ -400,6 +441,8 @@ function StepPreview({
   onNext: () => void;
   onBack: () => void;
 }) {
+  const { t, lang } = useLang();
+  const { rate } = useUsdIdr();
   const params = PRESETS[state.risk ?? "balanced"];
   const btcNum = parseFloat(state.btcAmount || "0");
   const sim = simulate(btcNum, state.btcPriceUsd, params);
@@ -407,70 +450,95 @@ function StepPreview({
 
   const fmt = (v: number) =>
     v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const rp = (v: number) => formatIdr(v * rate);
 
   return (
     <div className="space-y-6">
       <div>
         <Badge variant="amber" className="mb-3">
           <Zap className="w-3 h-3" />
-          Step 4
+          {t("Langkah 4", "Step 4")}
         </Badge>
         <h2 className="font-serif text-3xl font-medium tracking-[-0.02em] text-ink leading-tight">
-          Your <em className="italic font-normal text-amber-600">Shadow</em> preview
+          {t("Pratinjau ", "Your ")}
+          <em className="italic font-normal text-amber-600">Shadow</em>
+          {t("-mu", " preview")}
         </h2>
         <p className="text-muted text-sm mt-2">
-          Estimated income from {btcNum.toFixed(4)} BNB.
+          {t(
+            `Perkiraan penghasilan dari ${btcNum.toFixed(4)} BNB. Shadow = saldo pakai + tabungan.`,
+            `Estimated income from ${btcNum.toFixed(4)} BNB.`,
+          )}
         </p>
       </div>
 
       <Card variant="accent" className="!p-6">
-        <p className="text-xs uppercase tracking-wider text-white/80">Monthly income</p>
+        <p className="text-xs uppercase tracking-wider text-white/80">{t("Penghasilan per bulan", "Monthly income")}</p>
         <p className="text-5xl font-semibold tabular-nums tracking-tight mt-1">
-          ${fmt(sim.monthlyIncome)}
+          {rp(sim.monthlyIncome)}
         </p>
-        <p className="text-sm text-white/80 mt-1">
-          ≈ ${fmt(sim.annualIncome)} per year
+        <p className="text-sm text-white/80 mt-1 tabular-nums">
+          ≈ ${fmt(sim.monthlyIncome)} · {rp(sim.annualIncome)} (${fmt(sim.annualIncome)}) {t("per tahun", "per year")}
         </p>
       </Card>
 
       <div className="grid grid-cols-2 gap-3">
         <Card className="!p-5">
-          <p className="text-xs text-muted">Spendable now</p>
+          <p className="text-xs text-muted">{t("Saldo pakai sekarang", "Spendable now")}</p>
           <p className="text-2xl font-semibold tabular-nums mt-1">
-            ${fmt(sim.spendableNow)}
+            {rp(sim.spendableNow)}
           </p>
-          <p className="text-xs text-muted mt-0.5">unlocked at open</p>
+          <p className="text-xs text-muted mt-0.5">
+            <span className="tabular-nums">≈ ${fmt(sim.spendableNow)}</span> ·{" "}
+            {t("langsung cair saat vault dibuka", "unlocked at open")}
+          </p>
         </Card>
         <Card className="!p-5">
-          <p className="text-xs text-muted">Drop tolerance</p>
+          <p className="text-xs text-muted">{t("Tahan turun", "Drop tolerance")}</p>
           <p className="text-2xl font-semibold tabular-nums text-success mt-1">
             ~{(sim.btcDropTolerance * 100).toFixed(0)}%
           </p>
-          <p className="text-xs text-muted mt-0.5">before defense</p>
+          <p className="text-xs text-muted mt-0.5">{t("sebelum keeper membela", "before defense")}</p>
         </Card>
       </div>
 
       <Card variant="soft" className="!p-5 space-y-3">
-        <Row label="Total borrowed" value={`${fmt(sim.totalBorrowed)} MUSD`} />
-        <Row label="Into sMUSD vault" value={`${fmt(sim.inVault)} MUSD`} />
         <Row
-          label="Strategy"
-          value={`${GOAL_LABELS[state.goal ?? "forever"].badge} · ${state.risk}`}
-          capitalize
+          label={t("Total pinjaman", "Total borrowed")}
+          value={
+            <>
+              {rp(sim.totalBorrowed)}
+              <span className="ml-1.5 text-[0.8em] font-normal text-muted">≈ {fmt(sim.totalBorrowed)} MUSD</span>
+            </>
+          }
+        />
+        <Row
+          label={t("Masuk tabungan (sMUSD)", "Into sMUSD vault")}
+          value={
+            <>
+              {rp(sim.inVault)}
+              <span className="ml-1.5 text-[0.8em] font-normal text-muted">≈ {fmt(sim.inVault)} MUSD</span>
+            </>
+          }
+        />
+        <Row
+          label={t("Strategi", "Strategy")}
+          value={`${GOAL_LABELS[state.goal ?? "forever"].badge[lang]} · ${state.risk ? RISK_LABELS[state.risk][lang] : ""}`}
         />
       </Card>
 
       {!debt.meets && state.btcPriceUsd > 0 && (
         <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 space-y-1">
           <p className="text-xs font-medium text-amber-800">
-            Deposit too small for this strategy
+            {t("Setoran terlalu kecil untuk strategi ini", "Deposit too small for this strategy")}
           </p>
           <p className="text-xs text-amber-700 leading-relaxed">
-            At {formatUsd(state.btcPriceUsd, 0)}/BNB and {params.targetLTV / 100}%
-            LTV, {btcNum.toFixed(4)} BNB borrows only ~${debt.borrow.toFixed(0)}{" "}
-            MUSD — under the 2,000 MUSD minimum. Deposit at least{" "}
-            <span className="font-medium">{debt.minBtc.toFixed(4)} BNB</span>, or
-            pick a higher-LTV strategy.
+            {t(
+              `Di harga ${rp(state.btcPriceUsd)}/BNB (${formatUsd(state.btcPriceUsd, 0)}) dan LTV ${params.targetLTV / 100}%, ${btcNum.toFixed(4)} BNB hanya bisa meminjam ~${rp(debt.borrow)} (~${debt.borrow.toFixed(0)} MUSD), di bawah minimum 2.000 MUSD. Setor minimal`,
+              `At ${rp(state.btcPriceUsd)}/BNB (${formatUsd(state.btcPriceUsd, 0)}) and ${params.targetLTV / 100}% LTV, ${btcNum.toFixed(4)} BNB borrows only ~${rp(debt.borrow)} (~${debt.borrow.toFixed(0)} MUSD) — under the 2,000 MUSD minimum. Deposit at least`,
+            )}{" "}
+            <span className="font-medium">{debt.minBtc.toFixed(4)} BNB</span>
+            {t(", atau pilih strategi dengan LTV lebih tinggi.", ", or pick a higher-LTV strategy.")}
           </p>
         </div>
       )}
@@ -482,7 +550,7 @@ function StepPreview({
         onClick={onNext}
         disabled={!debt.meets && state.btcPriceUsd > 0}
       >
-        Create vault <ArrowRight className="w-4 h-4" />
+        {t("Buat vault", "Create vault")} <ArrowRight className="w-4 h-4" />
       </Button>
     </div>
   );
@@ -494,7 +562,7 @@ function Row({
   capitalize,
 }: {
   label: string;
-  value: string;
+  value: React.ReactNode;
   capitalize?: boolean;
 }) {
   return (
@@ -514,6 +582,8 @@ function StepConfirm({
   state: WizardState;
   onSuccess: () => void;
 }) {
+  const { t, lang } = useLang();
+  const { rate } = useUsdIdr();
   const params = PRESETS[state.risk ?? "balanced"];
   const queryClient = useQueryClient();
   const { writeContract, data: txHash, isPending, error } = useWriteContract();
@@ -567,11 +637,13 @@ function StepConfirm({
         </div>
         <div>
           <h2 className="font-serif text-3xl font-medium tracking-[-0.02em]">
-            Vault <em className="italic font-normal text-success">created</em>
+            Vault <em className="italic font-normal text-success">{t("berhasil dibuat", "created")}</em>
           </h2>
           <p className="text-muted text-sm mt-2 max-w-sm mx-auto">
-            Your Cermin vault is live on BSC testnet. The Shadow is active and the
-            keeper bot is watching.
+            {t(
+              "Vault Cermin-mu sudah aktif di BSC testnet. Shadow sudah jalan dan keeper ikut mengawasi.",
+              "Your Cermin vault is live on BSC testnet. The Shadow is active and the keeper bot is watching.",
+            )}
           </p>
         </div>
         {txHash && (
@@ -581,7 +653,7 @@ function StepConfirm({
             rel="noopener noreferrer"
             className="inline-block text-sm text-amber-600 hover:text-amber-700"
           >
-            View transaction ↗
+            {t("Lihat transaksi ↗", "View transaction ↗")}
           </a>
         )}
         <Button
@@ -592,7 +664,7 @@ function StepConfirm({
           loading={opening}
           disabled={opening}
         >
-          Open dashboard <ArrowRight className="w-4 h-4" />
+          {t("Buka dashboard", "Open dashboard")} <ArrowRight className="w-4 h-4" />
         </Button>
       </div>
     );
@@ -601,25 +673,29 @@ function StepConfirm({
   return (
     <div className="space-y-6">
       <div>
-        <Badge variant="amber" className="mb-3">Step 5</Badge>
+        <Badge variant="amber" className="mb-3">{t("Langkah 5", "Step 5")}</Badge>
         <h2 className="font-serif text-3xl font-medium tracking-[-0.02em] text-ink leading-tight">
-          Confirm &amp; <em className="italic font-normal">sign</em>
+          {t("Cek & ", "Confirm & ")}
+          <em className="italic font-normal">{t("tanda tangani", "sign")}</em>
         </h2>
         <p className="text-muted text-sm mt-2">
-          One transaction creates and funds your vault.
+          {t("Satu transaksi untuk membuat dan mengisi vault-mu.", "One transaction creates and funds your vault.")}
         </p>
       </div>
 
       <Card variant="soft" className="!p-0 overflow-hidden">
         <div className="divide-y divide-line">
-          <Field label="Depositing" value={`${state.btcAmount} BNB`} />
+          <Field label={t("Setor", "Depositing")} value={`${state.btcAmount} BNB`} />
           <Field
-            label="Strategy"
-            value={`${GOAL_LABELS[state.goal ?? "forever"].badge} · ${state.risk}`}
-            capitalize
+            label={t("Strategi", "Strategy")}
+            value={`${GOAL_LABELS[state.goal ?? "forever"].badge[lang]} · ${state.risk ? RISK_LABELS[state.risk][lang] : ""}`}
           />
-          <Field label="Network" value={activeChain.name} />
-          <Field label="BNB stays" value="Locked · Never sold" valueClass="text-success" />
+          <Field label={t("Jaringan", "Network")} value={activeChain.name} />
+          <Field
+            label={t("BNB-mu", "BNB stays")}
+            value={t("Tetap utuh · tidak dijual", "Locked · Never sold")}
+            valueClass="text-success"
+          />
         </div>
       </Card>
 
@@ -634,12 +710,13 @@ function StepConfirm({
       {txReverted && (
         <div className="rounded-2xl bg-rose-50 border border-rose-200 p-4 space-y-1">
           <p className="text-xs font-medium text-rose-800">
-            Transaction reverted — no vault was created.
+            {t("Transaksi gagal. Vault tidak dibuat.", "Transaction reverted — no vault was created.")}
           </p>
           <p className="text-xs text-rose-700 leading-relaxed">
-            The tx was mined but failed on-chain. Most likely the deposit is
-            below the 2,000 MUSD minimum debt, or your wallet is on the
-            wrong network. Adjust and try again.
+            {t(
+              "Transaksi sudah masuk blok tapi gagal di chain. Kemungkinan besar setoranmu di bawah minimum utang 2.000 MUSD, atau dompetmu ada di jaringan yang salah. Sesuaikan lalu coba lagi.",
+              "The tx was mined but failed on-chain. Most likely the deposit is below the 2,000 MUSD minimum debt, or your wallet is on the wrong network. Adjust and try again.",
+            )}
           </p>
           {txHash && (
             <a
@@ -648,7 +725,7 @@ function StepConfirm({
               rel="noopener noreferrer"
               className="inline-block text-xs text-rose-800 underline"
             >
-              Inspect transaction ↗
+              {t("Periksa transaksi ↗", "Inspect transaction ↗")}
             </a>
           )}
         </div>
@@ -657,12 +734,13 @@ function StepConfirm({
       {blockedByMinDebt && (
         <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 space-y-1">
           <p className="text-xs font-medium text-amber-800">
-            Deposit below the 2,000 MUSD minimum
+            {t("Setoran di bawah minimum 2.000 MUSD", "Deposit below the 2,000 MUSD minimum")}
           </p>
           <p className="text-xs text-amber-700 leading-relaxed">
-            {state.btcAmount || "0"} BNB at {formatUsd(state.btcPriceUsd, 0)}/BNB
-            and {params.targetLTV / 100}% LTV borrows only ~$
-            {debt.borrow.toFixed(0)} MUSD. Go back and deposit at least{" "}
+            {t(
+              `${state.btcAmount || "0"} BNB di harga ${formatIdr(state.btcPriceUsd * rate)}/BNB (${formatUsd(state.btcPriceUsd, 0)}) dengan LTV ${params.targetLTV / 100}% hanya meminjam ~${formatIdr(debt.borrow * rate)} (~${debt.borrow.toFixed(0)} MUSD). Kembali dan setor minimal`,
+              `${state.btcAmount || "0"} BNB at ${formatIdr(state.btcPriceUsd * rate)}/BNB (${formatUsd(state.btcPriceUsd, 0)}) and ${params.targetLTV / 100}% LTV borrows only ~${formatIdr(debt.borrow * rate)} (~${debt.borrow.toFixed(0)} MUSD). Go back and deposit at least`,
+            )}{" "}
             <span className="font-medium">{debt.minBtc.toFixed(4)} BNB</span>.
           </p>
         </div>
@@ -677,10 +755,10 @@ function StepConfirm({
         disabled={isPending || isConfirming || blockedByMinDebt}
       >
         {isPending
-          ? "Waiting for wallet…"
+          ? t("Menunggu dompet…", "Waiting for wallet…")
           : isConfirming
-          ? "Confirming on-chain…"
-          : "Sign & create vault"}
+          ? t("Menunggu konfirmasi di chain…", "Confirming on-chain…")
+          : t("Tanda tangani & buat vault", "Sign & create vault")}
       </Button>
     </div>
   );
@@ -716,6 +794,7 @@ interface OnboardingWizardProps {
 
 export function OnboardingWizard({ btcPriceUsd, onComplete }: OnboardingWizardProps) {
   const router = useRouter();
+  const { t } = useLang();
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
   const [state, setState] = useState<WizardState>({
@@ -753,10 +832,10 @@ export function OnboardingWizard({ btcPriceUsd, onComplete }: OnboardingWizardPr
     <div className="bg-app min-h-[100svh]">
       <header className="glass border-b border-line/60 sticky top-0 z-30">
         <div className="mx-auto max-w-xl px-5 h-14 flex items-center justify-between pad-safe-top">
-          <Link href="/" aria-label="Cermin home" className="transition-opacity hover:opacity-80">
+          <Link href="/" aria-label={t("Beranda Cermin Saku", "Cermin Saku home")} className="transition-opacity hover:opacity-80">
             <Logo />
           </Link>
-          <span className="text-[11px] uppercase tracking-[0.18em] text-muted">Open vault</span>
+          <span className="text-[11px] uppercase tracking-[0.18em] text-muted">{t("Buka vault", "Open vault")}</span>
         </div>
       </header>
 

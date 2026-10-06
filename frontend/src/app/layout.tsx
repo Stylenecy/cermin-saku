@@ -1,44 +1,44 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { Fraunces } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 import { Web3Provider } from "@/components/providers/Web3Provider";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
+import { LangProvider } from "@/lib/i18n";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
   weight: "100 900",
 });
-const fraunces = Fraunces({
+// Plus Jakarta Sans — by Tokotype (Indonesia), made for Jakarta's city identity. OFL.
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-fraunces",
-  style: ["normal", "italic"],
-  axes: ["opsz", "SOFT", "WONK"],
+  variable: "--font-jakarta",
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://cermin-saku.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Cermin — Your BNB stays whole.",
+  metadataBase: new URL(SITE_URL),
+  title: "Cermin Saku — uang saku dari BNB, yang tahu kapan harus menahan diri",
   description:
-    "Self-driving BNB banking on BNB Chain. Deposit BNB once, receive a dollar allowance forever — without ever selling your BNB.",
+    "Scheduled allowances paid from a BNB vault on BNB Chain, refused on-chain when the vault is not safe. Built on Cermin by Kiel (MIT). Testnet demo.",
   openGraph: {
-    title: "Cermin",
-    description: "Your BNB stays whole. The Shadow is what you live on.",
+    title: "Cermin Saku",
+    description:
+      "Uang saku terjadwal dari vault BNB. Kontrak menahan pembayaran kalau posisi tidak aman. BNB tidak pernah dijual.",
+    type: "website",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FAF6F0",
+  themeColor: "#F3F6FA",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: "cover",
 };
 
@@ -46,14 +46,13 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} text-ink antialiased font-sans`}
-      >
-        <Web3Provider>
-          <SmoothScroll>{children}</SmoothScroll>
-        </Web3Provider>
-        <div aria-hidden className="grain" />
+    <html lang="id">
+      <body className={`${jakarta.variable} ${geistMono.variable} text-ink antialiased font-sans`}>
+        <LangProvider>
+          <Web3Provider>
+            <SmoothScroll>{children}</SmoothScroll>
+          </Web3Provider>
+        </LangProvider>
       </body>
     </html>
   );

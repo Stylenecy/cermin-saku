@@ -7,6 +7,8 @@ import { parseAbiItem, parseEventLogs, formatUnits, type PublicClient, type Abi 
 import { Card } from "@/components/ui/Card";
 import { truncateAddress } from "@/lib/utils";
 import { EXPLORER_URL } from "@/lib/chains";
+import { useLang } from "@/lib/i18n";
+import { Rp } from "@/components/saku/Money";
 import { Activity, Zap, ShieldCheck, ArrowUpRight, Plus, Lock, Sparkles } from "lucide-react";
 
 type EventKind = "Opened" | "Skimmed" | "Defended" | "Withdrawn" | "Deposited" | "Closed";
@@ -20,7 +22,23 @@ export interface FeedEvent {
   detail: string;
   value: string;
   tone: Tone;
+  /** MUSD amount behind `value`, so the feed can show it in Rupiah. */
+  amountWei?: bigint;
+  sign?: "+" | "−";
+  /** Withdrawal recipient, so the detail line can be translated. */
+  to?: `0x${string}`;
 }
+
+// Feed copy per event type (Bahasa Indonesia first). Resolved at render time so
+// switching language never refetches the logs.
+const TEXT: Record<EventKind, { title: [string, string]; detail?: [string, string] }> = {
+  Opened: { title: ["Vault dibuka", "Vault opened"], detail: ["Shadow-mu mulai jalan", "Your Shadow went live"] },
+  Skimmed: { title: ["Skim saat BNB naik", "Skimmed on a peak"], detail: ["Shadow-mu bertambah", "Topped up your Shadow"] },
+  Defended: { title: ["Keeper membela posisi", "Defended the dip"] },
+  Withdrawn: { title: ["Tarik dari Shadow", "Withdrew from Shadow"] },
+  Deposited: { title: ["Jaminan ditambah", "Added collateral"], detail: ["Bantalan aman makin tebal", "Raised your buffer"] },
+  Closed: { title: ["Vault ditutup", "Vault closed"], detail: ["BNB dikembalikan ke kamu", "BNB returned to you"] },
+};
 
 // The vault only ever emits these events, so we can pull every log it produced
 // and decode locally — no per-event filtering needed.
@@ -73,6 +91,8 @@ function toFeedEvent(log: {
         detail: "Topped up your Shadow",
         value: `+$${musd(toSpendable + toVault)}`,
         tone: "success",
+        amountWei: toSpendable + toVault,
+        sign: "+",
       };
     }
     case "Defended": {
@@ -86,6 +106,8 @@ function toFeedEvent(log: {
         detail: `ICR ${icrBefore.toFixed(0)}% → ${icrAfter.toFixed(0)}%`,
         value: `−$${musd(repaid)}`,
         tone: "warning",
+        amountWei: repaid,
+        sign: "−",
       };
     }
     case "SpendableWithdrawn": {
@@ -98,6 +120,9 @@ function toFeedEvent(log: {
         detail: `To ${truncateAddress(to)}`,
         value: `−$${musd(amt)}`,
         tone: "info",
+        amountWei: amt,
+        sign: "−",
+        to,
       };
     }
     case "CollateralAdded": {
@@ -200,6 +225,7 @@ export function ActivityFeed({
   previewEvents?: FeedEvent[];
 }) {
   const client = usePublicClient();
+  const { t, lang } = useLang();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["activity", vaultAddress],
     queryFn: () => fetchActivity(client as PublicClient, vaultAddress),
@@ -218,8 +244,10 @@ export function ActivityFeed({
         <div className="flex items-center gap-2.5 min-w-0">
           <span className="font-mono text-xs text-amber-500 tabular-nums shrink-0">004</span>
           <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">Activity</p>
-            <p className="text-muted-2 text-xs truncate">Everything your vault does, on-chain</p>
+            <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">{t("Aktivitas", "Activity")}</p>
+            <p className="text-muted-2 text-xs truncate">
+              {t("Semua yang dilakukan vault-mu, tercatat on-chain", "Everything your vault does, on-chain")}
+            </p>
           </div>
         </div>
         {events.length > 0 && (
@@ -230,7 +258,7 @@ export function ActivityFeed({
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-success" />
               </span>
             )}
-            {events.length} {events.length === 1 ? "event" : "events"}
+            {events.length} {lang === "id" ? "kejadian" : events.length === 1 ? "event" : "events"}
           </span>
         )}
       </div>
@@ -250,18 +278,22 @@ export function ActivityFeed({
         </div>
       ) : isError ? (
         <div className="text-center py-10">
-          <p className="text-danger text-sm">Couldn&apos;t load activity</p>
-          <p className="text-muted-2 text-xs mt-1">RPC may be temporarily unavailable — retrying.</p>
+          <p className="text-danger text-sm">{t("Aktivitas gagal dimuat", "Couldn't load activity")}</p>
+          <p className="text-muted-2 text-xs mt-1">
+            {t("RPC mungkin sedang tidak tersedia. Mencoba lagi.", "RPC may be temporarily unavailable — retrying.")}
+          </p>
         </div>
       ) : events.length === 0 ? (
         <div className="py-8 flex flex-col items-center text-center">
           <span className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center mb-4 animate-float">
             <Activity className="w-6 h-6" />
           </span>
-          <p className="text-ink text-sm font-medium">No activity yet</p>
+          <p className="text-ink text-sm font-medium">{t("Belum ada aktivitas", "No activity yet")}</p>
           <p className="text-muted-2 text-xs mt-1 max-w-xs leading-relaxed">
-            Skims, defenses, withdrawals and deposits stream in here the moment they
-            settle on-chain.
+            {t(
+              "Skim, pembelaan posisi, penarikan, dan setoran muncul di sini begitu tercatat on-chain.",
+              "Skims, defenses, withdrawals and deposits stream in here the moment they settle on-chain.",
+            )}
           </p>
           <div className="mt-6 w-full max-w-md space-y-2.5" aria-hidden>
             {[80, 64, 72].map((w, i) => (
@@ -286,6 +318,13 @@ export function ActivityFeed({
             {events.map((ev, i) => {
               const first = i === 0;
               const last = i === events.length - 1;
+              const copy = TEXT[ev.type];
+              const title = copy ? t(copy.title[0], copy.title[1]) : ev.title;
+              const detail = copy?.detail
+                ? t(copy.detail[0], copy.detail[1])
+                : ev.type === "Withdrawn" && ev.to
+                  ? `${t("Ke", "To")} ${truncateAddress(ev.to)}`
+                  : ev.detail;
               return (
                 <li key={`${ev.txHash}-${i}`} className="relative">
                   <a
@@ -309,16 +348,31 @@ export function ActivityFeed({
 
                     <div className="min-w-0">
                       <div className="flex items-baseline gap-2">
-                        <p className="flex-1 truncate text-sm font-medium text-ink">{ev.title}</p>
-                        {ev.value && (
-                          <span className={`shrink-0 text-sm font-semibold tabular-nums ${VALUE[ev.tone]}`}>
-                            {ev.value}
-                          </span>
+                        <p className="flex-1 truncate text-sm font-medium text-ink">{title}</p>
+                        {ev.amountWei !== undefined ? (
+                          <Rp
+                            wei={ev.amountWei}
+                            sign={ev.sign}
+                            showUsd={false}
+                            className={`shrink-0 text-sm font-semibold ${VALUE[ev.tone]}`}
+                          />
+                        ) : (
+                          ev.value && (
+                            <span className={`shrink-0 text-sm font-semibold tabular-nums ${VALUE[ev.tone]}`}>
+                              {ev.value}
+                            </span>
+                          )
                         )}
                         <ArrowUpRight className="hidden h-3.5 w-3.5 shrink-0 text-muted-2 opacity-0 transition-opacity group-hover:opacity-100 sm:block" />
                       </div>
                       <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-2">
-                        <span className="truncate">{ev.detail}</span>
+                        <span className="truncate">{detail}</span>
+                        {ev.amountWei !== undefined && (
+                          <>
+                            <span className="text-cream-300">·</span>
+                            <span className="shrink-0 tabular-nums">≈ {musd(ev.amountWei)} MUSD</span>
+                          </>
+                        )}
                         <span className="text-cream-300">·</span>
                         <span className="shrink-0 font-mono tabular-nums">#{ev.blockNumber.toString()}</span>
                       </div>

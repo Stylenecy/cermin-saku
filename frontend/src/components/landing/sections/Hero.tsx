@@ -48,7 +48,7 @@ export function Hero({
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: "radial-gradient(rgba(92,84,72,0.10) 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(rgba(14,31,56,0.10) 1px, transparent 1px)",
             backgroundSize: "24px 24px",
             maskImage: "radial-gradient(120% 65% at 50% 12%, black, transparent 60%)",
             WebkitMaskImage: "radial-gradient(120% 65% at 50% 12%, black, transparent 60%)",
@@ -73,7 +73,7 @@ export function Hero({
           <span className="font-normal italic text-muted-2">The </span>
           <LineShadowText
             as="span"
-            shadowColor="#C77A3A"
+            shadowColor="#1E4A8F"
             className="font-normal italic text-ink"
           >
             Shadow

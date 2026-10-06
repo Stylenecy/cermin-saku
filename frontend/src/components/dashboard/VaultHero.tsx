@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/Button";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { ICRGauge } from "@/components/dashboard/ICRGauge";
 import { formatUsd, truncateAddress, icrLabel, icrToColor } from "@/lib/utils";
+import { formatIdr, useUsdIdr } from "@/lib/idr";
+import { useLang } from "@/lib/i18n";
 import { EXPLORER_URL } from "@/lib/chains";
 import { ExternalLink, ShieldCheck, ShieldAlert } from "lucide-react";
 
@@ -33,6 +35,8 @@ export function VaultHero({
   onDefend,
   isDefendLoading,
 }: VaultHeroProps) {
+  const { t, lang } = useLang();
+  const { rate } = useUsdIdr();
   const btcAmount = Number(collateral) / 1e18;
   const collUsd = btcAmount * btcPriceUsd;
   const debtMusd = Number(debt) / 1e18;
@@ -44,7 +48,7 @@ export function VaultHero({
   const dropBuffer =
     btcPriceUsd > 0 && liqPrice > 0 ? Math.max(0, ((btcPriceUsd - liqPrice) / btcPriceUsd) * 100) : 0;
   const healthColor = icrToColor(icrBps);
-  const healthLabel = icrLabel(icrBps);
+  const healthLabel = icrLabel(icrBps, lang);
   const needsDefense = icrBps > 0 && icrBps < defendICR;
 
   return (
@@ -85,24 +89,35 @@ export function VaultHero({
             </a>
             <span className="w-px h-3 bg-white/15" />
             <span className="inline-flex items-center gap-1.5 text-xs font-mono tabular-nums text-white/55">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" /> BNB {formatUsd(btcPriceUsd, 0)}
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" /> BNB {formatIdr(btcPriceUsd * rate)}
+              <span className="text-[0.85em]">
+                ({formatUsd(btcPriceUsd, 0)}) · {t("harga simulasi", "simulated price")}
+              </span>
             </span>
           </div>
 
           <p className="text-[11px] uppercase tracking-[0.18em] text-amber-300/80 font-mono mb-2">
-            The Shadow · what you live on
+            {t("Shadow · yang kamu pakai sehari-hari", "The Shadow · what you live on")}
           </p>
           <AnimatedNumber
+            key={rate}
             value={spendableUsd}
-            format={(n) => formatUsd(n)}
+            format={(n) => formatIdr(n * rate)}
             className="block text-[2.9rem] md:text-[3.4rem] font-semibold tabular-nums tracking-tight text-cream-50 leading-none"
           />
           <p className="text-sm text-white/55 mt-3">
-            Spendable now · cast from{" "}
-            <span className="text-cream-100 tabular-nums">{btcAmount.toFixed(4)} BNB</span> held whole
+            {t("Saldo pakai sekarang", "Spendable now")}{" "}
+            <span className="tabular-nums">
+              (≈ {spendableUsd.toLocaleString("en-US", { maximumFractionDigits: 2 })} MUSD)
+            </span>{" "}
+            ·{" "}
+            {t("bayangan dari", "cast from")}{" "}
+            <span className="text-cream-100 tabular-nums">{btcAmount.toFixed(4)} BNB</span>{" "}
+            {t("yang tetap utuh", "held whole")}
           </p>
           <p className="text-xs text-white/40 mt-1.5 tabular-nums">
-            Net position {formatUsd(netEquity)} · borrowed {formatUsd(debtMusd)}
+            {t("Posisi bersih", "Net position")} {formatIdr(netEquity * rate)} ({formatUsd(netEquity)}) ·{" "}
+            {t("utang", "borrowed")} {formatIdr(debtMusd * rate)} ({formatUsd(debtMusd)})
           </p>
         </div>
 
@@ -123,14 +138,18 @@ export function VaultHero({
               </span>
             </div>
             <div className="space-y-2 mb-4">
-              <Stat label="Liquidation" value={liqPrice > 0 ? formatUsd(liqPrice, 0) : "—"} />
-              <Stat label="BNB drop buffer" value={`${dropBuffer.toFixed(0)}%`} accent="text-success" />
+              <Stat
+                label={t("Likuidasi", "Liquidation")}
+                value={liqPrice > 0 ? formatIdr(liqPrice * rate) : "—"}
+                sub={liqPrice > 0 ? formatUsd(liqPrice, 0) : undefined}
+              />
+              <Stat label={t("Ruang turun BNB", "BNB drop buffer")} value={`${dropBuffer.toFixed(0)}%`} accent="text-success" />
             </div>
             {onDefend && (
               needsDefense ? (
                 <Button variant="secondary" size="sm" onClick={onDefend} loading={isDefendLoading} disabled={isDefendLoading} className="w-full">
                   <ShieldAlert className="w-4 h-4" />
-                  Defend now
+                  {t("Bela sekarang", "Defend now")}
                 </Button>
               ) : (
                 <button
@@ -139,7 +158,7 @@ export function VaultHero({
                   className="w-full inline-flex items-center justify-center gap-2 h-9 rounded-full border border-white/15 text-cream-100 text-sm hover:bg-white/[0.06] transition-colors disabled:opacity-50"
                 >
                   <ShieldCheck className="w-4 h-4" />
-                  Defend
+                  {t("Bela", "Defend")}
                 </button>
               )
             )}
@@ -150,11 +169,14 @@ export function VaultHero({
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: string }) {
+function Stat({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: string }) {
   return (
     <div className="flex items-center justify-between gap-4">
       <span className="text-[11px] uppercase tracking-[0.12em] text-white/45 font-mono">{label}</span>
-      <span className={`text-sm font-semibold tabular-nums ${accent ?? "text-cream-50"}`}>{value}</span>
+      <span className={`text-sm font-semibold tabular-nums ${accent ?? "text-cream-50"}`}>
+        {value}
+        {sub && <span className="ml-1 text-[0.8em] font-normal text-white/45">≈ {sub}</span>}
+      </span>
     </div>
   );
 }

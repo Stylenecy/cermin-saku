@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { icrToColor, icrLabel } from "@/lib/utils";
+import { useLang } from "@/lib/i18n";
 
 interface ICRGaugeProps {
   icr: bigint;
@@ -34,6 +35,7 @@ function icrToFraction(icrBps: number): number {
 }
 
 export function ICRGauge({ icr, dark = false }: ICRGaugeProps) {
+  const { t, lang } = useLang();
   const icrBps = Number(icr);
   const icrPct = icrBps / 100;
   const fraction = icrToFraction(icrBps);
@@ -54,15 +56,21 @@ export function ICRGauge({ icr, dark = false }: ICRGaugeProps) {
   const trackPath = arcPath(CENTER, CENTER, RADIUS, trackStart, trackEnd);
   const fillPath =
     fraction > 0 ? arcPath(CENTER, CENTER, RADIUS, trackStart, fillEnd) : null;
-  const label = icrLabel(icrBps);
+  const label = icrLabel(icrBps, lang);
 
   return (
     <div className="flex flex-col items-center">
-      <svg width={140} height={140} viewBox="0 0 140 140">
+      <svg
+        width={140}
+        height={140}
+        viewBox="0 0 140 140"
+        role="img"
+        aria-label={t(`ICR (rasio jaminan) ${icrPct.toFixed(0)}%, ${label}`, `ICR ${icrPct.toFixed(0)}%, ${label}`)}
+      >
         <path
           d={trackPath}
           fill="none"
-          stroke={dark ? "rgba(255,255,255,0.14)" : "#EDE4D5"}
+          stroke={dark ? "rgba(255,255,255,0.14)" : "#D5DEEA"}
           strokeWidth={STROKE}
           strokeLinecap="round"
         />
@@ -86,7 +94,7 @@ export function ICRGauge({ icr, dark = false }: ICRGaugeProps) {
           x={CENTER}
           y={CENTER - 6}
           textAnchor="middle"
-          fill={dark ? "#FDFBF7" : "#1F1B17"}
+          fill={dark ? "#FFFFFF" : "#0E1F38"}
           fontSize="18"
           fontWeight="700"
           fontFamily="inherit"
@@ -108,7 +116,7 @@ export function ICRGauge({ icr, dark = false }: ICRGaugeProps) {
           x={CENTER}
           y={CENTER + 26}
           textAnchor="middle"
-          fill={dark ? "rgba(255,255,255,0.45)" : "#8A8278"}
+          fill={dark ? "rgba(255,255,255,0.45)" : "#56657B"}
           fontSize="9"
           fontFamily="inherit"
         >

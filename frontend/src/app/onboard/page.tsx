@@ -8,12 +8,14 @@ import { useEffect } from "react";
 import { useVault } from "@/hooks/useVault";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { useBtcPrice } from "@/hooks/useBtcPrice";
+import { useLang } from "@/lib/i18n";
 
 export default function OnboardPage() {
   const { isConnected } = useAccount();
   const router = useRouter();
   const { hasVault, isLoading } = useVault();
   const { btcPriceUsd } = useBtcPrice();
+  const { t } = useLang();
 
   useEffect(() => {
     if (!isConnected) {
@@ -30,7 +32,11 @@ export default function OnboardPage() {
   if (!isConnected || isLoading) {
     return (
       <div className="bg-app min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-cream-300 border-t-amber-500 animate-spin" />
+        <div
+          role="status"
+          aria-label={t("Memuat…", "Loading…")}
+          className="w-8 h-8 rounded-full border-2 border-cream-300 border-t-amber-500 animate-spin"
+        />
       </div>
     );
   }

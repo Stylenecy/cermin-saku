@@ -19,7 +19,7 @@ export function SiteNav({
 }) {
   return (
     <header className="sticky top-0 z-50 px-4 pt-3 sm:pt-4 pad-safe-top">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-full glass border border-line/60 px-4 pr-3 sm:px-6 sm:pr-4 h-14 sm:h-16 shadow-[0_10px_34px_-14px_rgba(58,53,48,0.4)]">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-full glass border border-line/60 px-4 pr-3 sm:px-6 sm:pr-4 h-14 sm:h-16 shadow-[0_10px_34px_-14px_rgba(14,31,56,0.4)]">
         <Link
           href="/"
           aria-label="Cermin home"

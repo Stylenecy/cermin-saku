@@ -26,11 +26,11 @@ export function IsoArt({
 }) {
   const float =
     variant === "circle" ? (
-      <circle cx="160" cy="95" r="30" stroke="#C77A3A" strokeWidth="1.5" strokeDasharray="4 4" />
+      <circle cx="160" cy="95" r="30" stroke="#1E4A8F" strokeWidth="1.5" strokeDasharray="4 4" />
     ) : variant === "square" ? (
-      <rect x="130" y="65" width="60" height="60" rx="8" stroke="#C77A3A" strokeWidth="1.5" strokeDasharray="4 4" />
+      <rect x="130" y="65" width="60" height="60" rx="8" stroke="#1E4A8F" strokeWidth="1.5" strokeDasharray="4 4" />
     ) : (
-      <path d="M160 65 L206 95 L160 125 L114 95 Z" stroke="#C77A3A" strokeWidth="1.5" strokeDasharray="4 4" />
+      <path d="M160 65 L206 95 L160 125 L114 95 Z" stroke="#1E4A8F" strokeWidth="1.5" strokeDasharray="4 4" />
     );
 
   return (
@@ -42,17 +42,17 @@ export function IsoArt({
       className={`relative w-full max-w-[320px] mx-auto ${className ?? ""}`}
     >
       <svg viewBox="0 0 320 280" fill="none" className="block w-full">
-        <ellipse cx="160" cy="240" rx="98" ry="20" fill="#1F1B17" opacity="0.06" />
+        <ellipse cx="160" cy="240" rx="98" ry="20" fill="#0E1F38" opacity="0.06" />
         {/* slab faces */}
-        <path d="M68 200 L68 216 L160 256 L160 240 Z" fill="#EDE4D5" stroke="#3A3530" strokeWidth="1.25" strokeLinejoin="round" />
-        <path d="M160 240 L160 256 L252 216 L252 200 Z" fill="#DCCEB8" stroke="#3A3530" strokeWidth="1.25" strokeLinejoin="round" />
-        <path d="M160 160 L252 200 L160 240 L68 200 Z" fill="#FDFBF7" stroke="#3A3530" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M68 200 L68 216 L160 256 L160 240 Z" fill="#D5DEEA" stroke="#2A3A54" strokeWidth="1.25" strokeLinejoin="round" />
+        <path d="M160 240 L160 256 L252 216 L252 200 Z" fill="#B8C6D9" stroke="#2A3A54" strokeWidth="1.25" strokeLinejoin="round" />
+        <path d="M160 160 L252 200 L160 240 L68 200 Z" fill="#FFFFFF" stroke="#2A3A54" strokeWidth="1.5" strokeLinejoin="round" />
         {/* faint grid lines on top face */}
-        <path d="M114 180 L206 220 M206 180 L114 220" stroke="#3A3530" strokeWidth="0.75" opacity="0.25" />
+        <path d="M114 180 L206 220 M206 180 L114 220" stroke="#2A3A54" strokeWidth="0.75" opacity="0.25" />
         {/* dotted trajectory */}
-        <circle cx="160" cy="134" r="1.6" fill="#C77A3A" />
-        <circle cx="160" cy="146" r="1.6" fill="#C77A3A" opacity="0.7" />
-        <circle cx="160" cy="158" r="1.6" fill="#C77A3A" opacity="0.4" />
+        <circle cx="160" cy="134" r="1.6" fill="#1E4A8F" />
+        <circle cx="160" cy="146" r="1.6" fill="#1E4A8F" opacity="0.7" />
+        <circle cx="160" cy="158" r="1.6" fill="#1E4A8F" opacity="0.4" />
         {/* floating motif — gentle hover */}
         <motion.g
           animate={{ y: [0, -6, 0] }}
@@ -125,7 +125,7 @@ export function OrchestrationDiagram() {
       <div className="relative w-full aspect-[25/14] sm:aspect-[25/12] rounded-3xl border border-cream-300 bg-surface/40 overflow-hidden">
         {/* atmosphere */}
         <div className="absolute inset-0 bg-grid-soft opacity-50" />
-        <div className="absolute inset-0 bg-[radial-gradient(80%_60%_at_50%_110%,rgba(199,122,58,0.12),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(80%_60%_at_50%_110%,rgba(30,74,143,0.12),transparent_60%)]" />
 
         {/* connectors — draw in on view */}
         <motion.svg
@@ -141,7 +141,7 @@ export function OrchestrationDiagram() {
             <motion.path
               key={n.id}
               d={arc(n.x, n.y)}
-              stroke="#C77A3A"
+              stroke="#1E4A8F"
               strokeWidth="1.5"
               strokeLinecap="round"
               variants={drawPath}

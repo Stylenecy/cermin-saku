@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useAccount, useReadContracts } from "wagmi";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { CONTRACTS, ERC20_ABI } from "@/lib/contracts";
-import { formatMusd, formatTxError } from "@/lib/utils";
+import { formatTxError } from "@/lib/utils";
+import { useLang } from "@/lib/i18n";
+import { Rp } from "@/components/saku/Money";
 import { EXPLORER_URL } from "@/lib/chains";
 import { AlertTriangle } from "lucide-react";
 import type { ClosePhase } from "@/hooks/useVaultActions";
@@ -38,6 +40,7 @@ export function CloseVaultPanel({
   approveHash,
 }: CloseVaultPanelProps) {
   const { address: owner } = useAccount();
+  const { t } = useLang();
   const [confirmed, setConfirmed] = useState(false);
 
   // Read owner's MUSD balance + allowance so we can sanity-check before firing.
@@ -80,10 +83,10 @@ export function CloseVaultPanel({
   };
 
   const buttonLabel = (() => {
-    if (closePhase === "approving") return "Approving MUSD…";
-    if (closePhase === "closing") return "Closing vault…";
-    if (closePhase === "done") return "Vault closed";
-    return shortfall > 0n ? "Approve & close vault" : "Close vault";
+    if (closePhase === "approving") return t("Menyetujui MUSD…", "Approving MUSD…");
+    if (closePhase === "closing") return t("Menutup vault…", "Closing vault…");
+    if (closePhase === "done") return t("Vault sudah ditutup", "Vault closed");
+    return shortfall > 0n ? t("Setujui & tutup vault", "Approve & close vault") : t("Tutup vault", "Close vault");
   })();
 
   const covered = spendable + vaultValue > toBurn ? toBurn : spendable + vaultValue;
@@ -96,28 +99,30 @@ export function CloseVaultPanel({
         </div>
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-danger/70 mb-1">
-            005 · Danger zone
+            005 · {t("Zona berbahaya", "Danger zone")}
           </p>
-          <p className="text-sm font-semibold text-ink">Close vault</p>
+          <p className="text-sm font-semibold text-ink">{t("Tutup vault", "Close vault")}</p>
           <p className="text-xs text-muted mt-1 max-w-lg leading-relaxed">
-            Repays your MUSD debt and unlocks your BNB. Your Shadow (spendable +
-            savings) is spent to clear the loan — this can&apos;t be undone.
+            {t(
+              "Melunasi utang MUSD-mu dan membuka kunci BNB-mu. Shadow-mu (saldo pakai + tabungan) dipakai untuk melunasi pinjaman. Ini tidak bisa dibatalkan.",
+              "Repays your MUSD debt and unlocks your BNB. Your Shadow (spendable + savings) is spent to clear the loan — this can't be undone.",
+            )}
           </p>
         </div>
       </div>
 
       <div className="rounded-2xl bg-surface border border-cream-300 divide-y divide-line/70 mb-4">
-        <Row label="Debt to repay" value={formatMusd(toBurn)} />
-        <Row label="Covered by your Shadow" value={formatMusd(covered)} tone="success" />
+        <Row label={t("Utang yang dilunasi", "Debt to repay")} value={<Rp wei={toBurn} />} />
+        <Row label={t("Ditutup dari Shadow-mu", "Covered by your Shadow")} value={<Rp wei={covered} />} tone="success" />
         <Row
-          label="Pulled from your wallet"
-          value={formatMusd(shortfall)}
+          label={t("Diambil dari dompetmu", "Pulled from your wallet")}
+          value={<Rp wei={shortfall} />}
           tone={shortfall > 0n ? "warn" : "muted"}
         />
         {shortfall > 0n && (
           <Row
-            label="Your MUSD balance"
-            value={formatMusd(ownerMusdBalance)}
+            label={t("Saldo MUSD-mu", "Your MUSD balance")}
+            value={<Rp wei={ownerMusdBalance} />}
             tone={hasEnoughMusd ? "muted" : "danger"}
           />
         )}
@@ -125,8 +130,11 @@ export function CloseVaultPanel({
 
       {shortfall > 0n && !hasEnoughMusd && (
         <p className="text-xs text-danger mb-3">
-          You need {formatMusd(shortfall - ownerMusdBalance)} more MUSD in your wallet to
-          close this vault.
+          {t("Kamu butuh", "You need")} <Rp wei={shortfall - ownerMusdBalance} />{" "}
+          {t(
+            "lagi di dompetmu untuk menutup vault ini.",
+            "more in your wallet to close this vault.",
+          )}
         </p>
       )}
 
@@ -143,7 +151,7 @@ export function CloseVaultPanel({
               rel="noopener noreferrer"
               className="hover:text-ink transition-colors"
             >
-              Approve tx ↗
+              {t("Transaksi persetujuan ↗", "Approve tx ↗")}
             </a>
           )}
           {closeHash && (
@@ -153,7 +161,7 @@ export function CloseVaultPanel({
               rel="noopener noreferrer"
               className="hover:text-ink transition-colors"
             >
-              Close tx ↗
+              {t("Transaksi tutup vault ↗", "Close tx ↗")}
             </a>
           )}
         </div>
@@ -167,7 +175,10 @@ export function CloseVaultPanel({
           className="w-4 h-4 rounded border-cream-400 accent-danger"
         />
         <span className="text-xs text-muted">
-          I understand this closes my vault and returns my BNB.
+          {t(
+            "Aku paham ini menutup vault-ku dan mengembalikan BNB-ku.",
+            "I understand this closes my vault and returns my BNB.",
+          )}
         </span>
       </label>
 
@@ -196,7 +207,7 @@ function Row({
   tone,
 }: {
   label: string;
-  value: string;
+  value: ReactNode;
   tone?: "muted" | "warn" | "danger" | "success";
 }) {
   const color =

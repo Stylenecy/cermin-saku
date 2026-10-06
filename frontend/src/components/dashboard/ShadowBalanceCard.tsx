@@ -5,6 +5,8 @@ import { isAddress, parseUnits } from "viem";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
+import { formatIdr, useUsdIdr } from "@/lib/idr";
+import { useLang } from "@/lib/i18n";
 import { Zap, ArrowUpRight } from "lucide-react";
 
 interface SpendableCardProps {
@@ -21,6 +23,8 @@ export function ShadowBalanceCard({
   onWithdraw,
   isWithdrawLoading,
 }: SpendableCardProps) {
+  const { t } = useLang();
+  const { rate } = useUsdIdr();
   const [showForm, setShowForm] = useState(false);
   const [amount, setAmount] = useState("");
   const [recipient, setRecipient] = useState("");
@@ -29,12 +33,14 @@ export function ShadowBalanceCard({
   const validation = useMemo(() => {
     const parsed = parseFloat(amount);
     if (!amount) return { ok: false, reason: null as string | null };
-    if (isNaN(parsed) || parsed <= 0) return { ok: false, reason: "Enter a positive amount" };
-    if (parsed > spendable) return { ok: false, reason: "More than you can spend" };
+    if (isNaN(parsed) || parsed <= 0)
+      return { ok: false, reason: t("Masukkan jumlah lebih dari 0", "Enter a positive amount") };
+    if (parsed > spendable) return { ok: false, reason: t("Melebihi saldo pakai", "More than you can spend") };
     if (!recipient) return { ok: false, reason: null };
-    if (!isAddress(recipient)) return { ok: false, reason: "That doesn't look like an address" };
+    if (!isAddress(recipient))
+      return { ok: false, reason: t("Sepertinya itu bukan alamat yang valid", "That doesn't look like an address") };
     return { ok: true, reason: null };
-  }, [amount, recipient, spendable]);
+  }, [amount, recipient, spendable, t]);
 
   const handleWithdraw = () => {
     if (!validation.ok || !onWithdraw) return;
@@ -59,8 +65,10 @@ export function ShadowBalanceCard({
         <div className="flex items-center gap-2.5">
           <span className="font-mono text-xs text-amber-500 tabular-nums">002</span>
           <div>
-            <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">Spendable</p>
-            <p className="text-muted-2 text-xs">Your Shadow · ready to spend</p>
+            <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">
+              {t("Saldo pakai", "Spendable")}
+            </p>
+            <p className="text-muted-2 text-xs">{t("Bagian Shadow-mu · siap dipakai", "Your Shadow · ready to spend")}</p>
           </div>
         </div>
         <span className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
@@ -70,15 +78,19 @@ export function ShadowBalanceCard({
 
       <div className="mb-1">
         <AnimatedNumber
+          key={rate}
           value={spendable}
-          format={usd2}
+          format={(n) => formatIdr(n * rate)}
           className="block text-4xl font-semibold text-ink tabular-nums tracking-tight leading-none"
         />
-        <p className="text-base font-medium text-muted-2 mt-1">MUSD</p>
+        <p className="text-base font-medium text-muted-2 mt-1 tabular-nums">≈ {usd2(spendable)} MUSD</p>
       </div>
 
       <p className="text-xs text-muted-2 mt-3 leading-relaxed">
-        Borrowed against your BNB. Withdraw to any address to spend — your BNB stays locked.
+        {t(
+          "Dipinjam dengan jaminan BNB-mu. Tarik ke alamat mana pun untuk dipakai. BNB-mu tetap utuh.",
+          "Borrowed against your BNB. Withdraw to any address to spend — your BNB stays locked.",
+        )}
       </p>
 
       <div className="mt-auto pt-5">
@@ -91,14 +103,15 @@ export function ShadowBalanceCard({
             disabled={spendable <= 0}
           >
             <ArrowUpRight className="w-4 h-4" />
-            Withdraw
+            {t("Tarik", "Withdraw")}
           </Button>
         ) : (
           <div className="space-y-2 animate-fade-in">
             <input
               type="number"
               inputMode="decimal"
-              placeholder="Amount (MUSD)"
+              placeholder={t("Jumlah (MUSD)", "Amount (MUSD)")}
+              aria-label={t("Jumlah MUSD yang ditarik", "Amount of MUSD to withdraw")}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               max={spendable}
@@ -108,7 +121,8 @@ export function ShadowBalanceCard({
             />
             <input
               type="text"
-              placeholder="Recipient (0x...)"
+              placeholder={t("Alamat penerima (0x...)", "Recipient (0x...)")}
+              aria-label={t("Alamat penerima", "Recipient address")}
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
               spellCheck={false}
@@ -126,7 +140,7 @@ export function ShadowBalanceCard({
                 disabled={!validation.ok || isWithdrawLoading}
                 className="flex-1"
               >
-                Confirm
+                {t("Konfirmasi", "Confirm")}
               </Button>
               <Button
                 variant="ghost"
@@ -137,7 +151,7 @@ export function ShadowBalanceCard({
                   setRecipient("");
                 }}
               >
-                Cancel
+                {t("Batal", "Cancel")}
               </Button>
             </div>
           </div>

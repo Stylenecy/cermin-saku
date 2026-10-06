@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { formatUsd } from "@/lib/utils";
+import { formatIdr, useUsdIdr } from "@/lib/idr";
+import { useLang } from "@/lib/i18n";
 import { ShieldCheck, Coins, Plus } from "lucide-react";
 
 const MEZO_MAX_LTV = 90;
@@ -26,6 +28,8 @@ export function BtcBalanceCard({
   onAddCollateral,
   isAddCollateralLoading,
 }: CollateralCardProps) {
+  const { t } = useLang();
+  const { rate } = useUsdIdr();
   const btcAmount = Number(collateral) / 1e18;
   const usdValue = btcAmount * btcPriceUsd;
   const debtMusd = Number(debt) / 1e18;
@@ -49,9 +53,10 @@ export function BtcBalanceCard({
   const validation = useMemo(() => {
     if (!amount) return { ok: false, reason: null as string | null };
     const parsed = parseFloat(amount);
-    if (isNaN(parsed) || parsed <= 0) return { ok: false, reason: "Enter a positive amount" };
+    if (isNaN(parsed) || parsed <= 0)
+      return { ok: false, reason: t("Masukkan jumlah lebih dari 0", "Enter a positive amount") };
     return { ok: true, reason: null };
-  }, [amount]);
+  }, [amount, t]);
 
   const addUsd = (parseFloat(amount) || 0) * btcPriceUsd;
 
@@ -78,13 +83,15 @@ export function BtcBalanceCard({
         <div className="flex items-center gap-2.5">
           <span className="font-mono text-xs text-amber-500 tabular-nums">001</span>
           <div>
-            <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">BNB</p>
-            <p className="text-muted-2 text-xs">Locked · never sold</p>
+            <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">
+              {t("BNB · jaminan", "BNB · collateral")}
+            </p>
+            <p className="text-muted-2 text-xs">{t("Terkunci · tidak pernah dijual", "Locked · never sold")}</p>
           </div>
         </div>
         <Badge variant="success">
           <ShieldCheck className="w-3 h-3 mr-1" />
-          Protected
+          {t("Terlindungi", "Protected")}
         </Badge>
       </div>
 
@@ -98,7 +105,8 @@ export function BtcBalanceCard({
           />
           <p className="text-base font-medium text-muted-2 mt-1">
             BNB ·{" "}
-            <AnimatedNumber value={usdValue} format={(n) => formatUsd(n)} className="tabular-nums" />
+            <AnimatedNumber key={rate} value={usdValue} format={(n) => formatIdr(n * rate)} className="tabular-nums" />
+            <span className="ml-1.5 text-[0.8em] font-normal text-muted tabular-nums">≈ {formatUsd(usdValue)}</span>
           </p>
         </div>
       </div>
@@ -106,12 +114,16 @@ export function BtcBalanceCard({
       {/* net value vs debt */}
       <div className="relative grid grid-cols-2 gap-px mt-5 rounded-2xl overflow-hidden bg-line/70 border border-cream-300">
         <div className="bg-surface px-3.5 py-3">
-          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-2 font-mono">Net value</div>
-          <div className="text-sm font-semibold tabular-nums text-ink mt-1">{formatUsd(netValue)}</div>
+          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-2 font-mono">
+            {t("Nilai bersih", "Net value")}
+          </div>
+          <div className="text-sm font-semibold tabular-nums text-ink mt-1">{formatIdr(netValue * rate)}</div>
+          <div className="text-[11px] tabular-nums text-muted">≈ {formatUsd(netValue)}</div>
         </div>
         <div className="bg-surface px-3.5 py-3">
-          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-2 font-mono">Borrowed</div>
-          <div className="text-sm font-semibold tabular-nums text-ink mt-1">{formatUsd(debtMusd)}</div>
+          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-2 font-mono">{t("Utang", "Borrowed")}</div>
+          <div className="text-sm font-semibold tabular-nums text-ink mt-1">{formatIdr(debtMusd * rate)}</div>
+          <div className="text-[11px] tabular-nums text-muted">≈ {formatUsd(debtMusd)}</div>
         </div>
       </div>
 
@@ -119,9 +131,12 @@ export function BtcBalanceCard({
       <div className="relative mt-4">
         <div className="flex items-center justify-between text-[11px] font-mono mb-1.5">
           <span className="text-muted">
-            Borrowed against BNB <span className="text-ink tabular-nums">{ltvPct.toFixed(0)}%</span>
+            {t("Dipinjam dari nilai BNB", "Borrowed against BNB")}{" "}
+            <span className="text-ink tabular-nums">{ltvPct.toFixed(0)}%</span>
           </span>
-          <span className="text-muted-2 tabular-nums">max {MEZO_MAX_LTV}%</span>
+          <span className="text-muted-2 tabular-nums">
+            {t("maks", "max")} {MEZO_MAX_LTV}%
+          </span>
         </div>
         <div className="h-1.5 rounded-full bg-cream-300 overflow-hidden">
           <div
@@ -136,17 +151,21 @@ export function BtcBalanceCard({
           {!showForm ? (
             <Button variant="secondary" size="sm" onClick={() => setShowForm(true)} className="w-full">
               <Plus className="w-4 h-4" />
-              Add BNB
+              {t("Tambah BNB", "Add BNB")}
             </Button>
           ) : (
             <div className="space-y-2 animate-fade-in">
               <p className="text-[11px] text-muted-2 leading-relaxed">
-                More BNB = a bigger safety buffer. It doesn&apos;t borrow more on its own.
+                {t(
+                  "Tambah BNB = bantalan aman lebih tebal. Ini tidak otomatis menambah pinjaman.",
+                  "More BNB = a bigger safety buffer. It doesn't borrow more on its own.",
+                )}
               </p>
               <input
                 type="number"
                 inputMode="decimal"
-                placeholder="Amount (BNB)"
+                placeholder={t("Jumlah (BNB)", "Amount (BNB)")}
+                aria-label={t("Jumlah BNB yang ditambahkan", "Amount of BNB to add")}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 min={0}
@@ -154,7 +173,9 @@ export function BtcBalanceCard({
                 className="w-full bg-surface border border-cream-300 rounded-xl px-3.5 py-2.5 text-sm text-ink caret-amber-500 placeholder-muted-2 focus:outline-none focus:border-amber-300 focus:shadow-ring transition-all duration-200"
               />
               {addUsd > 0 && (
-                <p className="text-[11px] text-muted-2 text-right">≈ {formatUsd(addUsd)}</p>
+                <p className="text-[11px] text-muted-2 text-right">
+                  ≈ {formatIdr(addUsd * rate)} <span className="text-muted">({formatUsd(addUsd)})</span>
+                </p>
               )}
               {validation.reason && <p className="text-[11px] text-danger">{validation.reason}</p>}
               <div className="flex gap-2 pt-1">
@@ -166,7 +187,7 @@ export function BtcBalanceCard({
                   disabled={!validation.ok || isAddCollateralLoading}
                   className="flex-1"
                 >
-                  Confirm
+                  {t("Konfirmasi", "Confirm")}
                 </Button>
                 <Button
                   variant="ghost"
@@ -176,7 +197,7 @@ export function BtcBalanceCard({
                     setAmount("");
                   }}
                 >
-                  Cancel
+                  {t("Batal", "Cancel")}
                 </Button>
               </div>
             </div>

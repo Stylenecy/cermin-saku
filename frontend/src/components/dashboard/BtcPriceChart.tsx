@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/Card";
 import { formatUsd } from "@/lib/utils";
+import { formatIdr, useUsdIdr } from "@/lib/idr";
+import { useLang } from "@/lib/i18n";
 import { Activity } from "lucide-react";
 
 interface BtcPriceChartProps {
@@ -48,6 +50,8 @@ function smooth(pts: { x: number; y: number }[]): string {
 }
 
 export function BtcPriceChart({ currentPrice, liquidationPrice, defensePrice }: BtcPriceChartProps) {
+  const { t, lang } = useLang();
+  const { rate } = useUsdIdr();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["btc-history-30d"],
     queryFn: fetchHistory,
@@ -81,10 +85,10 @@ export function BtcPriceChart({ currentPrice, liquidationPrice, defensePrice }: 
     const change = data[0].p !== 0 ? ((data[data.length - 1].p - data[0].p) / data[0].p) * 100 : 0;
     const ticks = [0, Math.floor(data.length / 2), data.length - 1].map((i) => ({
       x: xOf(i),
-      label: new Date(data[i].t).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      label: new Date(data[i].t).toLocaleDateString(lang === "id" ? "id-ID" : "en-US", { month: "short", day: "numeric" }),
     }));
     return { yOf, pts, line, area, change, last: pts[pts.length - 1], ticks };
-  }, [data, liquidationPrice, defensePrice, currentPrice]);
+  }, [data, liquidationPrice, defensePrice, currentPrice, lang]);
 
   return (
     <Card className="relative overflow-hidden">
@@ -92,19 +96,27 @@ export function BtcPriceChart({ currentPrice, liquidationPrice, defensePrice }: 
         <div className="flex items-center gap-2.5">
           <span className="font-mono text-xs text-amber-500 tabular-nums">◆</span>
           <div>
-            <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">BNB / USD</p>
-            <p className="text-muted-2 text-xs">Last 30 days · the price your vault rides</p>
+            <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">
+              {t("Harga BNB", "BNB price")}
+            </p>
+            <p className="text-muted-2 text-xs">
+              {t(
+                "30 hari terakhir · harga sekarang dari feed simulasi testnet",
+                "Last 30 days · current price from the simulated testnet feed",
+              )}
+            </p>
           </div>
         </div>
         <div className="text-right">
           <div className="text-2xl font-semibold tabular-nums text-ink leading-none">
-            {formatUsd(currentPrice, 0)}
+            {formatIdr(currentPrice * rate)}
           </div>
+          <div className="text-xs tabular-nums text-muted mt-1">≈ {formatUsd(currentPrice, 0)}</div>
           {model && (
             <div
               className={`text-xs font-medium tabular-nums mt-1 ${model.change >= 0 ? "text-success" : "text-danger"}`}
             >
-              {model.change >= 0 ? "▲" : "▼"} {Math.abs(model.change).toFixed(1)}% · 30d
+              {model.change >= 0 ? "▲" : "▼"} {Math.abs(model.change).toFixed(1)}% · {t("30 hari", "30d")}
             </div>
           )}
         </div>
@@ -115,33 +127,34 @@ export function BtcPriceChart({ currentPrice, liquidationPrice, defensePrice }: 
       ) : isError || !model ? (
         <div className="h-[200px] flex flex-col items-center justify-center text-center">
           <Activity className="w-6 h-6 text-muted-2 mb-2" />
-          <p className="text-sm text-muted">Live price chart unavailable</p>
+          <p className="text-sm text-muted">{t("Grafik harga belum bisa dimuat", "Live price chart unavailable")}</p>
           <p className="text-[11px] text-muted-2 mt-1">
-            Liquidation at {formatUsd(liquidationPrice, 0)} · current {formatUsd(currentPrice, 0)}
+            {t("Likuidasi di", "Liquidation at")} {formatIdr(liquidationPrice * rate)} ·{" "}
+            {t("sekarang", "current")} {formatIdr(currentPrice * rate)}
           </p>
         </div>
       ) : (
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="BNB price chart">
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label={t("Grafik harga BNB", "BNB price chart")}>
           <defs>
             <linearGradient id="btcArea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#C77A3A" stopOpacity="0.22" />
-              <stop offset="100%" stopColor="#C77A3A" stopOpacity="0" />
+              <stop offset="0%" stopColor="#1E4A8F" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="#1E4A8F" stopOpacity="0" />
             </linearGradient>
           </defs>
 
           {/* defense + liquidation reference lines */}
           {defensePrice > 0 && (
-            <ReferenceLine y={model.yOf(defensePrice)} color="#C77A3A" label={`Defense ${formatUsd(defensePrice, 0)}`} />
+            <ReferenceLine y={model.yOf(defensePrice)} color="#1E4A8F" label={`${t("Garis bela", "Defense")} ${formatIdr(defensePrice * rate)}`} />
           )}
           {liquidationPrice > 0 && (
-            <ReferenceLine y={model.yOf(liquidationPrice)} color="#A84A3A" label={`Liquidation ${formatUsd(liquidationPrice, 0)}`} />
+            <ReferenceLine y={model.yOf(liquidationPrice)} color="#B42318" label={`${t("Likuidasi", "Liquidation")} ${formatIdr(liquidationPrice * rate)}`} />
           )}
 
           <path d={model.area} fill="url(#btcArea)" opacity={drawn ? 1 : 0} style={{ transition: "opacity 0.9s ease 0.3s" }} />
           <path
             d={model.line}
             fill="none"
-            stroke="#CE8E50"
+            stroke="#3F68AB"
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -152,8 +165,8 @@ export function BtcPriceChart({ currentPrice, liquidationPrice, defensePrice }: 
             style={{ transition: "stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1)" }}
           />
           {/* current dot */}
-          <circle cx={model.last.x} cy={model.last.y} r="4.5" fill="#6B8E5A" opacity={drawn ? 1 : 0} style={{ transition: "opacity 0.5s ease 1.1s" }} />
-          <circle cx={model.last.x} cy={model.last.y} r="4.5" fill="none" stroke="#6B8E5A" opacity="0.5">
+          <circle cx={model.last.x} cy={model.last.y} r="4.5" fill="#17663E" opacity={drawn ? 1 : 0} style={{ transition: "opacity 0.5s ease 1.1s" }} />
+          <circle cx={model.last.x} cy={model.last.y} r="4.5" fill="none" stroke="#17663E" opacity="0.5">
             <animate attributeName="r" values="4.5;11;4.5" dur="2.4s" repeatCount="indefinite" />
             <animate attributeName="opacity" values="0.5;0;0.5" dur="2.4s" repeatCount="indefinite" />
           </circle>
@@ -165,7 +178,7 @@ export function BtcPriceChart({ currentPrice, liquidationPrice, defensePrice }: 
               textAnchor={i === 0 ? "start" : i === model.ticks.length - 1 ? "end" : "middle"}
               fontSize="11"
               fontFamily="var(--font-geist-mono), monospace"
-              fill="#8A8278"
+              fill="#56657B"
             >
               {t.label}
             </text>

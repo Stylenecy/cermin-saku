@@ -13,7 +13,7 @@ interface LineShadowTextProps extends HTMLAttributes<HTMLElement> {
    line-shadow keyframe. Adapted from the OwnaFarm landing. */
 export function LineShadowText({
   children,
-  shadowColor = "#C77A3A",
+  shadowColor = "#1E4A8F",
   className,
   as: Component = "span",
   ...props

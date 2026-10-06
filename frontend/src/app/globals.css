@@ -5,71 +5,83 @@
    border-/from- etc. utilities; --shadow-*, --animate-*, --font-*, --radius-*
    map to their respective utility namespaces. */
 @theme {
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
-  --font-serif: var(--font-fraunces), Georgia, Cambria, serif;
+  /* Cermin Saku palette — see docs/DESIGN.md (passbook paper + passbook ink +
+     envelope). Kiel's token NAMES are kept so his components re-skin without
+     edits; only the values change. amber-* is now the "tinta" ink-blue ramp,
+     cream-* the passbook-paper ramp, shadow-* the navy ink ramp. */
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
+  --font-serif: var(--font-jakarta), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   --radius-4xl: 2rem;
 
-  /* Warm cream paper */
-  --color-cream-50: #fdfbf7;
-  --color-cream-100: #faf6f0;
-  --color-cream-200: #f5efe5;
-  --color-cream-300: #ede4d5;
-  --color-cream-400: #dcceb8;
+  --color-cream-50: #ffffff;
+  --color-cream-100: #f3f6fa;
+  --color-cream-200: #eaf0f7;
+  --color-cream-300: #d5deea;
+  --color-cream-400: #b8c6d9;
 
-  /* Amber accent */
-  --color-amber-50: #fbf3e8;
-  --color-amber-100: #f4e2c7;
-  --color-amber-200: #e8c99a;
-  --color-amber-300: #d4a36b;
-  --color-amber-400: #ce8e50;
-  --color-amber-500: #c77a3a;
-  --color-amber-600: #a85f26;
-  --color-amber-700: #7a4218;
+  --color-amber-50: #eaf0fa;
+  --color-amber-100: #d3e0f4;
+  --color-amber-200: #a9c1e6;
+  --color-amber-300: #6f93cc;
+  --color-amber-400: #3f68ab;
+  --color-amber-500: #1e4a8f;
+  --color-amber-600: #173b73;
+  --color-amber-700: #102b55;
 
-  /* Shadow / ink ramp */
-  --color-shadow-50: #efebe6;
-  --color-shadow-100: #d8d2cb;
-  --color-shadow-300: #8a8278;
-  --color-shadow-500: #5c5448;
-  --color-shadow-700: #3a3530;
-  --color-shadow-900: #1f1b17;
+  --color-shadow-50: #eef2f7;
+  --color-shadow-100: #d5deea;
+  --color-shadow-300: #7b8aa0;
+  --color-shadow-500: #4a5a72;
+  --color-shadow-700: #2a3a54;
+  --color-shadow-900: #0e1f38;
 
-  --color-peach-100: #f8e4d2;
-  --color-peach-200: #f4d5c0;
-  --color-peach-300: #e8b89a;
+  --color-peach-100: #f5ebd8;
+  --color-peach-200: #eeddbe;
+  --color-peach-300: #e8d5b0;
+  --color-ivory-100: #f5ebd8;
+  --color-ivory-200: #e8d5b0;
 
-  --color-ivory-100: #f7e9cb;
-  --color-ivory-200: #f0d9a8;
+  --color-success: #17663e;
+  --color-warning: #9a5b00;
+  --color-danger: #b42318;
+  --color-info: #1e4a8f;
 
-  --color-success: #6b8e5a;
-  --color-warning: #c77a3a;
-  --color-danger: #a84a3a;
-  --color-info: #5c7a8e;
+  /* Cermin Saku names */
+  --color-tinta: #1e4a8f;
+  --color-tinta-soft: #eaf0fa;
+  --color-daun: #17663e;
+  --color-daun-soft: #e6f2ea;
+  --color-stempel: #b42318;
+  --color-stempel-soft: #fbeae8;
+  --color-kunyit: #9a5b00;
+  --color-kunyit-soft: #fbf1df;
+  --color-amplop: #e8d5b0;
+  --color-amplop-deep: #c9a86a;
 
   /* Semantic aliases used across the app */
-  --color-canvas: #faf6f0;
-  --color-canvas-2: #f5efe5;
-  --color-surface: #fdfbf7;
-  --color-surface-soft: #f5efe5;
-  --color-surface-tint: #ede4d5;
-  --color-background: #faf6f0;
-  --color-ink: #1f1b17;
-  --color-ink-2: #3a3530;
-  --color-muted: #5c5448;
-  --color-muted-2: #8a8278;
-  --color-line: #ede4d5;
-  --color-border: #ede4d5;
-  --color-mint: #6b8e5a;
+  --color-canvas: #f3f6fa;
+  --color-canvas-2: #eaf0f7;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f6f8fb;
+  --color-surface-tint: #eaf0f7;
+  --color-background: #f3f6fa;
+  --color-ink: #0e1f38;
+  --color-ink-2: #2a3a54;
+  --color-muted: #4a5a72;
+  --color-muted-2: #56657b;
+  --color-line: #d5deea;
+  --color-border: #d5deea;
+  --color-mint: #17663e;
 
-  --shadow-sm: 0 1px 2px rgba(58, 53, 48, 0.04);
-  --shadow-soft: 0 4px 12px rgba(58, 53, 48, 0.06);
-  --shadow-pop: 0 12px 32px rgba(58, 53, 48, 0.1);
-  --shadow-lift: 0 22px 50px -20px rgba(58, 53, 48, 0.32);
-  --shadow-ring: 0 0 0 6px rgba(199, 122, 58, 0.1);
-  --shadow-glow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 20px 44px -18px rgba(199, 122, 58, 0.45);
-  --shadow-glow-amber: 0 0 0 1px rgba(199, 122, 58, 0.25), 0 14px 38px -12px rgba(199, 122, 58, 0.4);
+  --shadow-sm: 0 1px 2px rgba(14, 31, 56, 0.05);
+  --shadow-soft: 0 4px 12px rgba(14, 31, 56, 0.06);
+  --shadow-pop: 0 12px 32px rgba(14, 31, 56, 0.1);
+  --shadow-lift: 0 22px 50px -20px rgba(14, 31, 56, 0.28);
+  --shadow-ring: 0 0 0 4px rgba(30, 74, 143, 0.14);
+  --shadow-glow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 10px 24px -14px rgba(14, 31, 56, 0.35);
+  --shadow-glow-amber: 0 0 0 1px rgba(30, 74, 143, 0.2), 0 10px 24px -14px rgba(14, 31, 56, 0.3);
 
   --animate-fade-in: fade-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-rise-in: rise-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -93,8 +105,8 @@
     to { opacity: 1; transform: scale(1); }
   }
   @keyframes soft-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(199, 122, 58, 0); }
-    50% { box-shadow: 0 0 0 12px rgba(199, 122, 58, 0.1); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(30, 74, 143, 0); }
+    50% { box-shadow: 0 0 0 10px rgba(30, 74, 143, 0.12); }
   }
   @keyframes marquee {
     from { transform: translateX(0); }
@@ -115,8 +127,8 @@
 }
 
 :root {
-  --background: #faf6f0;
-  --foreground: #1f1b17;
+  --background: #f3f6fa;
+  --foreground: #0e1f38;
   --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -134,22 +146,15 @@
   box-sizing: border-box;
 }
 
-/* The page surface itself: warm cream with a dawn glow up top and a faint
-   counter-light at the lower-left, so flat areas (like the dashboard) read as
-   lit paper rather than a solid fill. Fixed so it stays put while scrolling. */
+/* Passbook paper: one flat cool tone, no glow. */
 html {
-  background-color: #faf6f0;
-  background-image:
-    radial-gradient(118% 78% at 50% -8%, rgba(199, 122, 58, 0.13), transparent 56%),
-    radial-gradient(82% 56% at 6% 104%, rgba(92, 84, 72, 0.06), transparent 60%);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
+  background-color: #f3f6fa;
   color-scheme: light;
   scroll-behavior: smooth;
 }
 
 html, body {
-  color: #1f1b17;
+  color: #0e1f38;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -160,35 +165,37 @@ body {
   background: transparent;
 }
 
-/* Editorial display headings in Fraunces; optical sizing lets the glyphs
-   tighten and gain contrast as they scale up. Body stays in Geist. */
+/* Display headings: Plus Jakarta Sans (Tokotype, Indonesia), heavy and tight. */
 h1, h2 {
-  font-family: var(--font-fraunces), Georgia, Cambria, serif;
-  font-optical-sizing: auto;
-  letter-spacing: -0.018em;
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
-h1 { font-variation-settings: "SOFT" 0, "WONK" 0; }
 
-::selection { background: rgba(199, 122, 58, 0.22); color: #1f1b17; }
+:focus-visible { outline: 2px solid #1e4a8f; outline-offset: 2px; }
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+::selection { background: rgba(30, 74, 143, 0.18); color: #0e1f38; }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(92, 84, 72, 0.2); border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(92, 84, 72, 0.35); }
+::-webkit-scrollbar-thumb { background: rgba(14, 31, 56, 0.2); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(14, 31, 56, 0.35); }
 
-/* RainbowKit warm light override */
+/* RainbowKit passbook override */
 [data-rk] {
-  --rk-radii-modal: 22px;
-  --rk-radii-actionButton: 999px;
-  --rk-radii-connectButton: 999px;
-  --rk-colors-accentColor: #1f1b17;
-  --rk-colors-accentColorForeground: #fdfbf7;
-  --rk-colors-modalBackground: #fdfbf7;
-  --rk-colors-modalBorder: #ede4d5;
-  --rk-colors-modalText: #1f1b17;
-  --rk-colors-modalTextSecondary: #5c5448;
-  --rk-colors-profileAction: #f5efe5;
-  --rk-colors-profileActionHover: #ede4d5;
+  --rk-radii-modal: 16px;
+  --rk-radii-actionButton: 10px;
+  --rk-radii-connectButton: 10px;
+  --rk-colors-accentColor: #1e4a8f;
+  --rk-colors-accentColorForeground: #ffffff;
+  --rk-colors-modalBackground: #ffffff;
+  --rk-colors-modalBorder: #d5deea;
+  --rk-colors-modalText: #0e1f38;
+  --rk-colors-modalTextSecondary: #4a5a72;
+  --rk-colors-profileAction: #f3f6fa;
+  --rk-colors-profileActionHover: #eaf0f7;
 }
 
 @layer utilities {
@@ -198,13 +205,13 @@ h1 { font-variation-settings: "SOFT" 0, "WONK" 0; }
   /* Flat cream paper — kept opaque (used for full-page roots and the phone
      mock interior). The page-wide atmosphere lives on <html>. */
   .bg-app {
-    background-color: #faf6f0;
+    background-color: #f3f6fa;
   }
 
   .bg-grid-soft {
     background-image:
-      linear-gradient(to right, rgba(92, 84, 72, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(92, 84, 72, 0.05) 1px, transparent 1px);
+      linear-gradient(to right, rgba(14, 31, 56, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(14, 31, 56, 0.05) 1px, transparent 1px);
     background-size: 32px 32px;
   }
 
@@ -212,14 +219,14 @@ h1 { font-variation-settings: "SOFT" 0, "WONK" 0; }
   .bg-ledger {
     background-image: linear-gradient(
       to bottom,
-      rgba(92, 84, 72, 0.05) 1px,
+      rgba(14, 31, 56, 0.05) 1px,
       transparent 1px
     );
     background-size: 100% 2.25rem;
   }
 
   .glass {
-    background: rgba(250, 246, 240, 0.72);
+    background: rgba(243, 246, 250, 0.86);
     backdrop-filter: blur(18px) saturate(120%);
     -webkit-backdrop-filter: blur(18px) saturate(120%);
   }
@@ -230,8 +237,8 @@ h1 { font-variation-settings: "SOFT" 0, "WONK" 0; }
     background: linear-gradient(
       to right,
       transparent,
-      rgba(92, 84, 72, 0.18) 20%,
-      rgba(92, 84, 72, 0.18) 80%,
+      rgba(14, 31, 56, 0.18) 20%,
+      rgba(14, 31, 56, 0.18) 80%,
       transparent
     );
   }
@@ -246,23 +253,9 @@ h1 { font-variation-settings: "SOFT" 0, "WONK" 0; }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-  .scrollbar-thin { scrollbar-width: thin; scrollbar-color: rgba(92, 84, 72, 0.25) transparent; }
+  .scrollbar-thin { scrollbar-width: thin; scrollbar-color: rgba(14, 31, 56, 0.25) transparent; }
   .scrollbar-thin::-webkit-scrollbar { width: 5px; }
-  .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(92, 84, 72, 0.2); border-radius: 999px; }
-}
-
-/* ── Film grain ───────────────────────────────────────────────────────────
-   A single fixed overlay tile, rendered once in the layout. Multiply at very
-   low opacity reads as paper tooth over the cream without muddying text. */
-.grain {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.055;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 200px 200px;
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(14, 31, 56, 0.2); border-radius: 999px; }
 }
 
 /* ── Scroll reveal ────────────────────────────────────────────────────────
@@ -306,5 +299,28 @@ h1 { font-variation-settings: "SOFT" 0, "WONK" 0; }
     transform: none !important;
     filter: none !important;
   }
-  .grain { display: none; }
+}
+
+/* ── Cermin Saku: the DITAHAN stamp and the passbook ledger ───────────── */
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 2px solid currentColor;
+  border-radius: 6px;
+  padding: 0.1rem 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  transform: rotate(-4deg);
+}
+.ledger-row + .ledger-row { border-top: 1px dashed #d5deea; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .stamp-in { animation: stamp-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  @keyframes stamp-in {
+    from { opacity: 0; transform: rotate(-4deg) scale(1.6); }
+    to { opacity: 1; transform: rotate(-4deg) scale(1); }
+  }
 }

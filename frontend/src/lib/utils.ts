@@ -36,10 +36,10 @@ export function formatIcr(icrBps: bigint | number): string {
 
 /** Hex stroke color for the ICR ring (warm semantic scale). */
 export function icrToColor(icrBps: number): string {
-  if (icrBps >= 20000) return "#6B8E5A"; // sage
-  if (icrBps >= 16000) return "#C77A3A"; // amber
-  if (icrBps >= 13500) return "#A85F26"; // deep amber
-  return "#A84A3A"; // brick
+  if (icrBps >= 20000) return "#17663E"; // sage
+  if (icrBps >= 16000) return "#1E4A8F"; // amber
+  if (icrBps >= 13500) return "#9A5B00"; // deep amber
+  return "#B42318"; // brick
 }
 
 /** Tailwind text color class for the same threshold scale. */
@@ -50,12 +50,13 @@ export function icrToTextClass(icrBps: number): string {
   return "text-danger";
 }
 
-export function icrLabel(icrBps: number): string {
-  if (icrBps >= 30000) return "Healthy";
-  if (icrBps >= 20000) return "Safe";
-  if (icrBps >= 15000) return "Caution";
-  if (icrBps >= 12500) return "Danger";
-  return "Critical";
+export function icrLabel(icrBps: number, lang: "id" | "en" = "id"): string {
+  const id = lang === "id";
+  if (icrBps >= 30000) return id ? "Sehat" : "Healthy";
+  if (icrBps >= 20000) return id ? "Aman" : "Safe";
+  if (icrBps >= 15000) return id ? "Waspada" : "Caution";
+  if (icrBps >= 12500) return id ? "Bahaya" : "Danger";
+  return id ? "Kritis" : "Critical";
 }
 
 export function truncateAddress(addr: string): string {
