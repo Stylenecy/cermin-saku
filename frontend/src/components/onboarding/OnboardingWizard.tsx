@@ -201,12 +201,27 @@ function StepDeposit({
       </div>
 
       {amountEntered && !affordable && (
-        <p className="text-sm text-danger -mt-3">
-          {t("Saldo belum cukup untuk setoran ini plus biaya gas. ", "Not enough balance for this deposit plus gas. ")}
-          <a href="https://www.bnbchain.org/en/testnet-faucet" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
-            {t("Ambil tBNB gratis di faucet ↗", "Get free tBNB from the faucet ↗")}
-          </a>
-        </p>
+        <div className="text-sm -mt-3 space-y-2">
+          <p className="text-danger">
+            {t("Saldo belum cukup untuk setoran ini plus biaya gas. ", "Not enough balance for this deposit plus gas. ")}
+            <a href="https://www.bnbchain.org/en/testnet-faucet" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+              {t("Ambil tBNB gratis di faucet ↗", "Get free tBNB from the faucet ↗")}
+            </a>
+          </p>
+          {address && (
+            <button
+              type="button"
+              onClick={() => navigator.clipboard?.writeText(address)}
+              className="flex w-full items-center justify-between gap-3 rounded-2xl border border-cream-300 bg-surface px-4 py-2.5 text-left hover:border-amber-200"
+            >
+              <span className="min-w-0">
+                <span className="block text-xs text-muted">{t("Kirim tBNB ke alamat dompetmu ini", "Send tBNB to this wallet address")}</span>
+                <span className="block truncate font-mono text-xs text-ink">{address}</span>
+              </span>
+              <span className="shrink-0 text-xs font-medium text-amber-600">{t("Salin", "Copy")}</span>
+            </button>
+          )}
+        </div>
       )}
       {amountEntered && affordable && priceReady && !floor.meets && (
         <p className="text-sm text-amber-700 -mt-3">

@@ -1,6 +1,6 @@
 "use client";
 
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { ConnectButton } from "@/components/wallet/Connect";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useLang } from "@/lib/i18n";

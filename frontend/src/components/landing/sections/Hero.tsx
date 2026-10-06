@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { ConnectButton } from "@/components/wallet/Connect";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, ArrowDown } from "lucide-react";

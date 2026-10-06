@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { ConnectButton } from "@/components/wallet/Connect";
 import { LayoutDashboard, Mail, HandCoins, Eye } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { LangToggle } from "@/components/ui/LangToggle";
@@ -75,7 +75,7 @@ export function SakuNav({ demo = false }: { demo?: boolean }) {
                 }
               </ConnectButton.Custom>
             ) : (
-              <ConnectButton showBalance={false} chainStatus="icon" accountStatus="address" label={t("Hubungkan", "Connect")} />
+              <ConnectButton label={t("Masuk", "Sign in")} />
             )}
           </div>
         </div>

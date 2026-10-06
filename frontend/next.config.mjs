@@ -13,6 +13,15 @@ const nextConfig = {
       ...config.resolve.fallback,
       "@react-native-async-storage/async-storage": false,
     };
+    // Privy's optional peers for features we don't use (Solana, Abstract and
+    // Farcaster wallets, ERC-4337 smart wallets): stubbed out of the bundle.
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@abstract-foundation/agw-client": false,
+      "@farcaster/mini-app-solana": false,
+      "@solana-program/memo": false,
+      permissionless: false,
+    };
     return config;
   },
 };
