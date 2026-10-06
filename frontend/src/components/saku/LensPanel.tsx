@@ -34,11 +34,14 @@ export function LensPanel({
   vault,
   livePrice,
   sakuAmount,
+  sakuPending = true,
   compact = false,
 }: {
   vault: `0x${string}` | undefined;
   livePrice: bigint | undefined;
   sakuAmount: bigint; // next allowance (MUSD wei) to test against
+  /** false when every schedule is finished: the amount is then the last envelope, tested as if scheduled again */
+  sakuPending?: boolean;
   compact?: boolean;
 }) {
   const { t, lang } = useLang();
@@ -168,14 +171,22 @@ export function LensPanel({
         </div>
         <div className="rounded-xl border border-line px-4 py-3">
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
-            {t("Uang saku berikutnya", "Next allowance")}
+            {sakuPending
+              ? t("Uang saku berikutnya", "Next allowance")
+              : t("Kalau amplop ini dijadwalkan lagi", "If this envelope were scheduled again")}
           </p>
-          <p className="mt-1 font-bold text-ink">
-            <Rp wei={sakuAmount} showUsd={false} />
-          </p>
-          <p className={cn("mt-0.5 text-sm", sakuStatus === "Ok" ? "text-daun" : "text-stempel")}>
-            {sakuStatus ? (lang === "id" ? STATUS_TEXT[sakuStatus].id : STATUS_TEXT[sakuStatus].en) : "…"}
-          </p>
+          {sakuAmount > 0n ? (
+            <>
+              <p className="mt-1 font-bold text-ink">
+                <Rp wei={sakuAmount} showUsd={false} />
+              </p>
+              <p className={cn("mt-0.5 text-sm", sakuStatus === "Ok" ? "text-daun" : "text-stempel")}>
+                {sakuStatus ? (lang === "id" ? STATUS_TEXT[sakuStatus].id : STATUS_TEXT[sakuStatus].en) : "…"}
+              </p>
+            </>
+          ) : (
+            <p className="mt-1 text-sm text-muted">{t("Belum ada amplop terjadwal.", "No envelope scheduled yet.")}</p>
+          )}
         </div>
         <div className="rounded-xl border border-line px-4 py-3">
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">{t("Kalau keeper membela", "If the keeper defends")}</p>

@@ -110,7 +110,7 @@ export default function SakuPage() {
               />
             </div>
             <div className="mt-10">
-              <LensPanel vault={vault} livePrice={price} sakuAmount={next?.amount ?? 0n} />
+              <LensPanel vault={vault} livePrice={price} sakuAmount={next?.amount ?? schedules.data?.[0]?.amount ?? 0n} sakuPending={!!next} />
             </div>
             <div className="mt-10">
               <Ledger vault={vault} />

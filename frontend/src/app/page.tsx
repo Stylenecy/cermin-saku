@@ -116,7 +116,7 @@ export default function HomePage() {
           </p>
           <div className="mt-8">
             {sakuDeployed() && demo ? (
-              <LensPanel vault={demo} livePrice={price} sakuAmount={next?.amount ?? 0n} />
+              <LensPanel vault={demo} livePrice={price} sakuAmount={next?.amount ?? schedules.data?.[0]?.amount ?? 0n} sakuPending={!!next} />
             ) : (
               <p className="rounded-2xl border border-dashed border-kunyit bg-kunyit-soft p-6 text-sm">
                 {t("Lens aktif begitu kontrak testnet dideploy.", "Lens goes live once the testnet contracts are deployed.")}
