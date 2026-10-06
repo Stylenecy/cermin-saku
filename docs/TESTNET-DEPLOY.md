@@ -39,5 +39,22 @@ State right after setup: collateral 0.07 BNB, debt 27.34 MUSD, ICR 200.0%, spend
 ## Demo run (keeper live)
 
 <!-- DEMO-RUN:START -->
-*In progress.*
+Run on 6 Oct 2026 (times WIB) with the keeper (`npm run keeper`, keeper wallet `0x2E68…47E`) and the simulated price moved by our deployer. Read back with `agent/scripts/ledger.ts`.
+
+| Time | Block | Event | Tx |
+|---|---|---|---|
+| 12.59.22 | 135154224 | simulated BNB feed deployed, seeded from Chainlink BNB/USD at **$781** | [`0x2d9d3b3b…`](https://testnet.bscscan.com/tx/0x2d9d3b3b371a9a3af2e403c0029afd986b77753f82c32246bdb3366f3e13c978) |
+| 13.02.27 | 135154635 | `AllowancePaid` #1: 1 MUSD to Rara, ICR 200.00% | [`0x5809ddaa…`](https://testnet.bscscan.com/tx/0x5809ddaa97c84d6b0994349257210e226d2ce85ded9d8db662b326e311f3051b) |
+| 13.07.01 | 135155244 | `AllowancePaid` #2: 1 MUSD to Rara, ICR 200.00% | [`0x1abf5b6a…`](https://testnet.bscscan.com/tx/0x1abf5b6a6d80435e9a9ef3a3a08ca4aee84fd11e9a84e3b6f3ed6c4eac1aef09) |
+| 13.07.28 | 135155304 | simulated BNB price set to **$560** | [`0xd5519560…`](https://testnet.bscscan.com/tx/0xd5519560cab4765cc6ef72bcef0228b455b74c4ee461bbb2a7cf43e9eed42581) |
+| 13.12.02 | 135155912 | `AllowanceHeld`: reason 3 = IcrBelowFloor (health floor), ICR 143.40%, price $560. **No MUSD moved.** | [`0x8bfc7eb9…`](https://testnet.bscscan.com/tx/0x8bfc7eb9d9f7eec2e4d7b7cea7178b8531a2165a88f50ba4e71cf4bce35c1883) |
+| 13.13.17 | 135156080 | simulated BNB price set to **$520** | [`0xd46bcdb2…`](https://testnet.bscscan.com/tx/0xd46bcdb24a88162cae838308c2c055e8764c09467cf7db830da0aa9a0fafea16) |
+| 13.13.31 | 135156110 | `Defended` by the keeper: ICR 133.15% → 140.00%, repaid 1.3356 MUSD from savings | [`0x28221622…`](https://testnet.bscscan.com/tx/0x2822162267ba374cb026bfb18653cacbae58e55c5f6e440a628d327e1c34d5f8) |
+| 13.17.31 | 135156644 | `AllowanceHeld`: reason 3 = IcrBelowFloor (health floor), ICR 140.00%, price $520. **No MUSD moved.** | [`0x21b94fc4…`](https://testnet.bscscan.com/tx/0x21b94fc419befe40efc4e3fef69e151d46222c88466bf7713f7f4c65b0550400) |
+| 13.18.02 | 135156713 | simulated BNB price set to **$800** | [`0x5c4050ea…`](https://testnet.bscscan.com/tx/0x5c4050ea07ebfdc17ef4b9a35c152fe8b92a35ff5a477ec4c0464e4416b63d73) |
+| 13.18.31 | 135156777 | `AllowancePaid` #3: 1 MUSD to Rara, ICR 215.38% | [`0xf28644fe…`](https://testnet.bscscan.com/tx/0xf28644fe48d73f269ce5e1523756a873cae72b3c22ded9d547920b80208bc74e) |
+| 13.18.34 | 135156782 | `AllowancePaid` #4: 1 MUSD to Rara, ICR 215.38% | [`0xbfb4be50…`](https://testnet.bscscan.com/tx/0xbfb4be5078324c0061963b4a67cfc79fe5722049ef37f2ecec7d22d9be09a550) |
+
+After the run: collateral still **0.07 BNB**, debt 26.00 MUSD, ICR 215.4% at $800, paid 4/12, spendable 9.67, savings 12.33 MUSD.
+The held envelopes were not lost: periods #3 and #4 fell due while the position was unsafe, stayed owed, and were both paid within seconds of the recovery (the keeper catches up owed periods).
 <!-- DEMO-RUN:END -->
