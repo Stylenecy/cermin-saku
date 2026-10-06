@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLang } from "@/lib/i18n";
 import { useLensWhatIf } from "@/hooks/useSaku";
 import { STATUS_TEXT, statusName } from "@/lib/saku";
-import { formatIdr, musdToIdr, useUsdIdr } from "@/lib/idr";
+import { formatBps, formatIdr, musdToIdr, useUsdIdr } from "@/lib/idr";
 import { cn } from "@/lib/utils";
 import { Rp } from "./Money";
 
@@ -163,7 +163,7 @@ export function LensPanel({
           <p className="text-xs font-semibold uppercase tracking-[0.08em] opacity-80">{t("Keadaan", "State")}</p>
           <p className="mt-1 font-bold">{zone ? (lang === "id" ? ZONE_TEXT[zone].id : ZONE_TEXT[zone].en) : "…"}</p>
           <p className="mt-0.5 text-sm tabular">
-            ICR {snapshot ? (Number(snapshot.icrBps) / 100).toFixed(1) : "…"}%
+            ICR {formatBps(snapshot?.icrBps, lang, 1)}
           </p>
         </div>
         <div className="rounded-xl border border-line px-4 py-3">
@@ -186,7 +186,7 @@ export function LensPanel({
               </p>
               <p className="mt-0.5 text-sm text-muted">
                 {t("dari tabungan", "from savings")} <Rp wei={defend.fromSavings} showUsd={false} /> ·{" "}
-                {t("ICR jadi", "ICR to")} {(Number(defend.icrAfterBps) / 100).toFixed(0)}%
+                {t("ICR jadi", "ICR to")} {formatBps(defend.icrAfterBps, lang, 0)}
               </p>
             </>
           ) : (

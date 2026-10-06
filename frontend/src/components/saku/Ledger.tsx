@@ -5,6 +5,7 @@ import { useLedger, type LedgerEntry } from "@/hooks/useSaku";
 import { STATUS_TEXT, statusName } from "@/lib/saku";
 import { EXPLORER_URL } from "@/lib/chains";
 import { truncateAddress } from "@/lib/utils";
+import { formatBps } from "@/lib/idr";
 import { Rp, RpPrice } from "./Money";
 
 function when(ts: number | undefined, lang: "id" | "en") {
@@ -28,7 +29,7 @@ function Row({ e }: { e: LedgerEntry }) {
       body = (
         <>
           <Rp wei={e.amount} className="font-semibold text-ink" /> → {truncateAddress(e.recipient ?? "")}
-          <span className="text-muted"> · {t("ke", "no.")}-{e.paymentNo} · ICR {(Number(e.icrBps) / 100).toFixed(0)}%</span>
+          <span className="text-muted"> · {t("ke", "no.")}-{e.paymentNo} · ICR {formatBps(e.icrBps, lang, 0)}</span>
         </>
       );
       break;
@@ -40,7 +41,7 @@ function Row({ e }: { e: LedgerEntry }) {
           <span className="text-ink">{lang === "id" ? STATUS_TEXT[s].id : STATUS_TEXT[s].en}</span>
           <span className="text-muted">
             {" "}
-            · ICR {(Number(e.icrBps) / 100).toFixed(1)}% · BNB <RpPrice price={e.price} />
+            · ICR {formatBps(e.icrBps, lang, 1)} · BNB <RpPrice price={e.price} />
           </span>
         </>
       );
@@ -53,7 +54,7 @@ function Row({ e }: { e: LedgerEntry }) {
           {t("Keeper mencicil utang", "Keeper repaid debt")} <Rp wei={e.amount} className="font-semibold text-ink" showUsd={false} />
           <span className="text-muted">
             {" "}
-            · ICR {(Number(e.icrBps) / 100).toFixed(0)}% → {(Number(e.icrAfterBps) / 100).toFixed(0)}%
+            · ICR {formatBps(e.icrBps, lang, 0)} → {formatBps(e.icrAfterBps, lang, 0)}
           </span>
         </>
       );

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { WagmiProvider } from "wagmi";
-import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider, lightTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createWagmiConfig } from "@/lib/wagmi";
 import "@rainbow-me/rainbowkit/styles.css";
@@ -32,6 +32,9 @@ function MountShell() {
   );
 }
 
+// Passbook-ink accent for the connect button and modals (white on #1E4A8F = 8.63:1).
+const RK_THEME = lightTheme({ accentColor: "#1E4A8F", accentColorForeground: "#FFFFFF", borderRadius: "medium" });
+
 // Provider tree lives in its own component so it only renders after mount.
 // The wagmi config (and the WalletConnect connector it spins up) is created
 // here via useState, guaranteeing it never runs on the server.
@@ -42,7 +45,7 @@ function Web3Inner({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>{children}</RainbowKitProvider>
+        <RainbowKitProvider theme={RK_THEME}>{children}</RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

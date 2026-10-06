@@ -79,3 +79,13 @@ export function formatAsOf(iso: string, lang: "id" | "en"): string {
     timeZoneName: "short",
   });
 }
+
+/** A plain number in the reader's convention: 143,4 (id) or 143.4 (en). */
+export function formatNum(value: number, lang: "id" | "en", digits = 0): string {
+  return value.toLocaleString(lang === "id" ? "id-ID" : "en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
+
+/** Basis points (14340) as a percent string: "143,4%". */
+export function formatBps(bps: bigint | number | undefined, lang: "id" | "en", digits = 1): string {
+  return bps === undefined ? "…" : `${formatNum(Number(bps) / 100, lang, digits)}%`;
+}

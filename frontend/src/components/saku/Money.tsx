@@ -1,6 +1,6 @@
 "use client";
 
-import { formatIdr, formatAsOf, musdToIdr, useUsdIdr } from "@/lib/idr";
+import { formatIdr, formatAsOf, formatNum, musdToIdr, useUsdIdr } from "@/lib/idr";
 import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +17,7 @@ export function Rp({
   sign?: "" | "+" | "−";
 }) {
   const { rate } = useUsdIdr();
+  const { lang } = useLang();
   if (wei === undefined) return <span className={cn("text-muted", className)}>—</span>;
   const usd = Number(wei) / 1e18;
   return (
@@ -25,7 +26,7 @@ export function Rp({
       {formatIdr(musdToIdr(wei, rate))}
       {showUsd && (
         <span className="ml-1.5 text-[0.8em] font-normal text-muted">
-          ≈ {usd.toLocaleString("en-US", { maximumFractionDigits: 2 })} MUSD
+          ≈ {formatNum(usd, lang, Number.isInteger(usd) ? 0 : 2)} MUSD
         </span>
       )}
     </span>

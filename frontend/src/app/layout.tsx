@@ -46,8 +46,9 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="id">
-      <body className={`${jakarta.variable} ${geistMono.variable} text-ink antialiased font-sans`}>
+    // The font variables sit on <html> so the @theme tokens (--font-sans/--font-mono, defined on :root) can resolve them.
+    <html lang="id" className={`${jakarta.variable} ${geistMono.variable}`}>
+      <body className="text-ink antialiased font-sans">
         <LangProvider>
           <Web3Provider>
             <SmoothScroll>{children}</SmoothScroll>

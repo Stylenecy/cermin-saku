@@ -14,6 +14,7 @@ import { ScheduleCards } from "@/components/saku/ScheduleCards";
 import { ContractList } from "@/components/saku/ContractList";
 import { Rp, RpPrice, RateNote } from "@/components/saku/Money";
 import { truncateAddress } from "@/lib/utils";
+import { formatBps, formatNum } from "@/lib/idr";
 
 function Stat({ label, children, note }: { label: string; children: React.ReactNode; note?: React.ReactNode }) {
   return (
@@ -26,7 +27,7 @@ function Stat({ label, children, note }: { label: string; children: React.ReactN
 }
 
 export default function BuktiPage() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const vault = SAKU.DEMO_VAULT !== zeroAddress ? SAKU.DEMO_VAULT : undefined;
   const { price, isError: priceError } = useFeedPrice();
   const snap = useLensSnapshot(vault, price);
@@ -59,14 +60,14 @@ export default function BuktiPage() {
         ) : (
           <>
             <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <Stat label={t("Harga BNB (simulasi)", "BNB price (simulated)")} note={price ? `$${(Number(price) / 1e18).toLocaleString("en-US", { maximumFractionDigits: 2 })}` : priceError ? t("feed tidak terjangkau", "feed unreachable") : "…"}>
+              <Stat label={t("Harga BNB (simulasi)", "BNB price (simulated)")} note={price ? `$${formatNum(Number(price) / 1e18, lang, 2)}` : priceError ? t("feed tidak terjangkau", "feed unreachable") : "…"}>
                 <RpPrice price={price} />
               </Stat>
               <Stat label={t("Jaminan", "Collateral")} note={t("tidak pernah dijual", "never sold")}>
-                {s ? `${(Number(s.collateral) / 1e18).toLocaleString("en-US", { maximumFractionDigits: 4 })} BNB` : "…"}
+                {s ? `${formatNum(Number(s.collateral) / 1e18, lang, 2)} BNB` : "…"}
               </Stat>
               <Stat label="ICR" note={s ? `${t("Saku berhenti di bawah", "Saku pauses below")} ${s.sakuFloorICR / 100}%` : undefined}>
-                {s ? `${(Number(s.icrBps) / 100).toFixed(1)}%` : "…"}
+                {s ? formatBps(s.icrBps, lang, 1) : "…"}
               </Stat>
               <Stat label={t("Saldo pakai", "Spendable")} note={s ? <>{t("tabungan", "savings")} <Rp wei={s.savings} showUsd={false} /></> : undefined}>
                 <Rp wei={s?.spendable} showUsd={false} />
