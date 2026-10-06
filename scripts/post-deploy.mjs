@@ -111,7 +111,7 @@ const rows = [
 ].filter(([k]) => dep[k]);
 const link = (a) => `[\`${a}\`](${SCAN}/address/${a})`;
 const contracts = [
-  `**BSC testnet (chain ${dep.chainId})**, deployed from \`${dep.deployer}\` at block ${dep.deployBlock}. Source verified on [Sourcify](https://repo.sourcify.dev/${dep.chainId}/${dep.CerminSaku}).`,
+  `**BSC testnet (chain ${dep.chainId})**, deployed from \`${dep.deployer}\` at block ${dep.deployBlock}. Source verified on [Sourcify](https://repo.sourcify.dev/${dep.chainId}/${dep.CerminSaku}).${existsSync(join(root, 'docs', 'TESTNET-DEPLOY.md')) ? ' Every transaction: [`docs/TESTNET-DEPLOY.md`](docs/TESTNET-DEPLOY.md).' : ''}`,
   '',
   '| Contract | Address | Role |',
   '|---|---|---|',

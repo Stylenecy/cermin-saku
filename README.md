@@ -11,7 +11,7 @@ when the position is not safe, and pays it once it is. BNB is never sold.
 Built on **Cermin** by Kiel (MIT) · Indonesia Web3 Hackathon 2026 · BSC testnet
 
 <!-- PROOF-LINKS:START -->
-Live app: *pending testnet deploy* · Demo video: *pending* · On-chain proof page: *pending* · [Contracts](#contracts)
+Live app: *pending* · Demo video: *pending* · On-chain proof page: *pending* · [Contracts on BscScan](#contracts)
 <!-- PROOF-LINKS:END -->
 
 </div>
@@ -39,7 +39,7 @@ else, with one rule enforced by the contract, not by the app: *survival money co
 | Lens = real execution | fuzz `testFuzz_PreviewDefendEqualsDefend`, `testFuzz_PreviewSkimEqualsSkim`, `testFuzz_PausePriceIsExactBoundary` | [`CerminLens.t.sol`](contracts/test/saku/CerminLens.t.sol) |
 | Keeper logic tested | **18 node:test passing** (12 original + 6 Saku) | `cd agent && npm test` |
 | Full flow rehearsed on a local chain | open → pay ×2 → price drop → `AllowanceHeld(IcrBelowFloor)` → keeper `defend()` → recovery → paid again | [`docs/LOCAL-REHEARSAL.md`](docs/LOCAL-REHEARSAL.md) |
-| BSC testnet deployment from our own wallet | *pending: deployer `0xE2D734318ffCF581b0de67FF188964CE99343BF4` awaiting testnet BNB* | [Contracts](#contracts) |
+| BSC testnet deployment from our own wallet | CerminSaku [`0x8603B62b82166D68A9f76d2753bD8a15066Cb6Df`](https://testnet.bscscan.com/address/0x8603B62b82166D68A9f76d2753bD8a15066Cb6Df) and 8 more, source on Sourcify | [Contracts](#contracts) |
 | CI | GitHub Actions: forge build + test, keeper typecheck + test, web typecheck + lint + build | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) |
 
 ## Judge path (5 minutes, no wallet needed)
@@ -122,7 +122,20 @@ flowchart LR
 ## Contracts
 
 <!-- CONTRACTS:START -->
-*BSC testnet (chain 97) deployment pending. Deployer: `0xE2D734318ffCF581b0de67FF188964CE99343BF4` (a fresh wallet made for Cermin Saku; not the shared BCC deployer).*
+**BSC testnet (chain 97)**, deployed from `0xE2D734318ffCF581b0de67FF188964CE99343BF4` at block 135154187. Source verified on [Sourcify](https://repo.sourcify.dev/97/0x8603B62b82166D68A9f76d2753bD8a15066Cb6Df). Every transaction: [`docs/TESTNET-DEPLOY.md`](docs/TESTNET-DEPLOY.md).
+
+| Contract | Address | Role |
+|---|---|---|
+| CerminSaku | [`0x8603B62b82166D68A9f76d2753bD8a15066Cb6Df`](https://testnet.bscscan.com/address/0x8603B62b82166D68A9f76d2753bD8a15066Cb6Df) | new · schedules, `release`, holds |
+| CerminLens | [`0x3287Be66C493d24B492c300A179B33f1a7A0B6bc`](https://testnet.bscscan.com/address/0x3287Be66C493d24B492c300A179B33f1a7A0B6bc) | new · what-if price views |
+| CerminFactory | [`0x1dD819Fafc6B649dCfE682a6d165d7d8CA4C4013`](https://testnet.bscscan.com/address/0x1dD819Fafc6B649dCfE682a6d165d7d8CA4C4013) | Kiel · clones vaults |
+| CerminVaultImpl | [`0x23a865ed98d471398C2b161c3C4A2fCBC129257c`](https://testnet.bscscan.com/address/0x23a865ed98d471398C2b161c3C4A2fCBC129257c) | Kiel + Saku gates (v1.1 implementation) |
+| PriceFeed | [`0xab5D57Fc63C9D7D271312ffbbB8a658A883A1389`](https://testnet.bscscan.com/address/0xab5D57Fc63C9D7D271312ffbbB8a658A883A1389) | simulated BNB/USD (MockPriceFeed, seeded from Chainlink) |
+| MUSD | [`0xAc319a7FffEEd3D5e1Ae7a776151168Bd0dCfe59`](https://testnet.bscscan.com/address/0xAc319a7FffEEd3D5e1Ae7a776151168Bd0dCfe59) | mock stablecoin |
+| BorrowerOperations | [`0xd5F721410C2E2A373bdFA8AD6f43a78E3C6fC462`](https://testnet.bscscan.com/address/0xd5F721410C2E2A373bdFA8AD6f43a78E3C6fC462) | mock CDP |
+| TroveManager | [`0x083D1955830Fe4D1039a2DcedbEfA52a1Df8fB81`](https://testnet.bscscan.com/address/0x083D1955830Fe4D1039a2DcedbEfA52a1Df8fB81) | mock CDP |
+| SavingsVault | [`0x0A668Cbd794a7c7Bb17dfcC6CeD60cc092BF53C4`](https://testnet.bscscan.com/address/0x0A668Cbd794a7c7Bb17dfcC6CeD60cc092BF53C4) | mock savings (sMUSD) |
+| Demo vault | [`0xfe1742bcfe1836d080f690526cd739bbae192a03`](https://testnet.bscscan.com/address/0xfe1742bcfe1836d080f690526cd739bbae192a03) | the vault shown on `/bukti` |
 <!-- CONTRACTS:END -->
 
 | Contract | Source | Role |

@@ -46,9 +46,9 @@ export DEPLOYMENT="../contracts/$OUT" RPC_URL="$RPC" CHAIN_ID="$CHAIN" \
   PARENT_PRIVATE_KEY="$DEPLOYER_PRIVATE_KEY" PRICE_OWNER_PRIVATE_KEY="$DEPLOYER_PRIVATE_KEY"
 cd agent
 
-echo "== fund keeper (0.02 tBNB)"
+echo "== fund keeper (${KEEPER_BNB:-0.02} tBNB)"
 kb=$(cast balance "$KEEPER_ADDRESS" --rpc-url "$RPC")
-if [ "$kb" = "0" ]; then npx tsx scripts/demo.ts fund --to "$KEEPER_ADDRESS" --bnb 0.02; fi
+if [ "$kb" = "0" ]; then npx tsx scripts/demo.ts fund --to "$KEEPER_ADDRESS" --bnb "${KEEPER_BNB:-0.02}"; fi
 
 echo "== demo vault + allowance"
 if ! npx tsx scripts/demo.ts status >/dev/null 2>&1; then

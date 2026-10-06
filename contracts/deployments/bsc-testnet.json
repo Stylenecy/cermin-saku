@@ -1,0 +1,18 @@
+{
+  "BorrowerOperations": "0xd5F721410C2E2A373bdFA8AD6f43a78E3C6fC462",
+  "CerminFactory": "0x1dD819Fafc6B649dCfE682a6d165d7d8CA4C4013",
+  "CerminLens": "0x3287Be66C493d24B492c300A179B33f1a7A0B6bc",
+  "CerminSaku": "0x8603B62b82166D68A9f76d2753bD8a15066Cb6Df",
+  "CerminVaultImpl": "0x23a865ed98d471398C2b161c3C4A2fCBC129257c",
+  "MUSD": "0xAc319a7FffEEd3D5e1Ae7a776151168Bd0dCfe59",
+  "PriceFeed": "0xab5D57Fc63C9D7D271312ffbbB8a658A883A1389",
+  "SavingsVault": "0x0A668Cbd794a7c7Bb17dfcC6CeD60cc092BF53C4",
+  "TroveManager": "0x083D1955830Fe4D1039a2DcedbEfA52a1Df8fB81",
+  "chainId": 97,
+  "deployBlock": 135154187,
+  "deployer": "0xE2D734318ffCF581b0de67FF188964CE99343BF4",
+  "gasComp": "2000000000000000000",
+  "minDebt": "20000000000000000000",
+  "mockCdp": true,
+  "priceFeedKind": "MockPriceFeed"
+}
