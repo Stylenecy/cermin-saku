@@ -25,19 +25,19 @@ export function buttonClasses({
   className?: string;
 }): string {
   return cn(
-    "relative inline-flex items-center justify-center gap-2 font-semibold tracking-tight rounded-lg select-none cursor-pointer",
+    "relative inline-flex items-center justify-center gap-2 font-medium tracking-tight rounded-full select-none cursor-pointer",
     "transition-[transform,box-shadow,background-color,border-color,color] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] will-change-transform",
     "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none",
-    "focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-200",
+    "focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-200/50",
     variant === "primary" &&
-      "text-white bg-tinta shadow-sm hover:bg-amber-600 hover:-translate-y-px active:translate-y-0 active:scale-[0.985]",
+      "text-white bg-gradient-to-b from-shadow-700 to-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_8px_20px_-10px_rgba(31,27,23,0.55)] hover:from-shadow-500 hover:to-ink-2 hover:-translate-y-px hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_16px_30px_-12px_rgba(31,27,23,0.55)] active:translate-y-0 active:scale-[0.985]",
     variant === "secondary" &&
       "bg-surface text-ink border border-cream-300 shadow-sm hover:border-amber-200 hover:-translate-y-px hover:shadow-soft active:translate-y-0 active:scale-[0.985]",
     variant === "soft" &&
       "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200/50 hover:bg-amber-100 active:scale-[0.985]",
     variant === "ghost" && "text-ink hover:bg-surface-soft active:scale-[0.985]",
     variant === "danger" &&
-      "text-cream-50 bg-gradient-to-b from-[#C2382B] to-danger shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_20px_-10px_rgba(180,35,24,0.5)] hover:-translate-y-px hover:shadow-[0_16px_30px_-12px_rgba(180,35,24,0.55)] active:translate-y-0 active:scale-[0.985]",
+      "text-cream-50 bg-gradient-to-b from-[#B85546] to-danger shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_20px_-10px_rgba(168,74,58,0.5)] hover:-translate-y-px hover:shadow-[0_16px_30px_-12px_rgba(168,74,58,0.55)] active:translate-y-0 active:scale-[0.985]",
     icon && "rounded-full p-0",
     !icon && size === "sm" && "h-9 px-4 text-sm",
     !icon && size === "md" && "h-11 px-5 text-sm",

@@ -2,12 +2,13 @@
 
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
-import { Zap, ShieldCheck, Bot, Sparkles, TrendingUp, Lock } from "lucide-react";
+import { ShieldCheck, Bot, Sparkles, Lock, PauseCircle, Wallet, BookOpen } from "lucide-react";
+import { useLang } from "@/lib/i18n";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import { Reveal } from "@/components/ui/Reveal";
 import { Card } from "@/components/ui/Card";
 import { Eyebrow } from "./Eyebrow";
-import { PeakVisual } from "./PeakVisual";
+import { GateVisual } from "./GateVisual";
 
 type Tone = "sage" | "amber" | "info" | "peach";
 
@@ -38,20 +39,22 @@ function IconTile({ icon, tone }: { icon: ReactNode; tone: Tone }) {
   );
 }
 
-/* "Auto-yield" — compounding bars climbing toward ~5% APR. */
-function YieldVisual() {
-  const bars = [24, 32, 30, 42, 50, 60, 70, 84];
+/* A slice of the passbook: the same envelope, paid, held, paid again, in Rupiah. */
+function PassbookVisual() {
+  const { t } = useLang();
+  const rows = [
+    { m: t("Okt", "Oct"), v: "Rp 500.000", s: t("dibayar", "paid"), c: "text-leaf-700 bg-leaf-50 border-leaf-100" },
+    { m: t("Nov", "Nov"), v: "Rp 500.000", s: t("ditahan", "held"), c: "text-danger bg-stempel-soft border-danger/20" },
+    { m: t("Nov", "Nov"), v: "Rp 500.000", s: t("dibayar", "paid"), c: "text-leaf-700 bg-leaf-50 border-leaf-100" },
+  ];
   return (
-    <div className="relative h-full w-full min-h-[96px] rounded-2xl bg-gradient-to-b from-success/[0.1] to-surface border border-success/15 overflow-hidden p-3 flex items-end gap-1.5">
-      <span className="absolute top-2.5 right-3 inline-flex items-center gap-1 rounded-full bg-surface/90 border border-success/20 px-2 py-0.5 text-[10px] font-mono text-success shadow-sm">
-        ~5% APR
-      </span>
-      {bars.map((h, i) => (
-        <div
-          key={i}
-          className="flex-1 rounded-t-sm bg-gradient-to-t from-amber-300/80 to-success transition-all"
-          style={{ height: `${h}%` }}
-        />
+    <div className="relative h-full w-full min-h-[96px] rounded-2xl bg-surface border border-cream-300 overflow-hidden px-4 py-2 bg-ledger">
+      {rows.map((r, i) => (
+        <div key={i} className="flex items-center justify-between gap-3 py-1.5 text-xs">
+          <span className="font-mono text-muted-2 w-8">{r.m}</span>
+          <span className="flex-1 font-medium text-ink tabular-nums">{r.v}</span>
+          <span className={`rounded-full border px-2 py-0.5 font-mono text-[10px] ${r.c}`}>{r.s}</span>
+        </div>
       ))}
     </div>
   );
@@ -107,56 +110,63 @@ function FeatureCard({
 }
 
 export function Features() {
+  const { t } = useLang();
   const features: Feature[] = [
     {
-      icon: <Zap className="w-5 h-5" />,
-      title: "Skims on every peak",
-      body: "When BNB pumps past your threshold, the vault draws fresh MUSD and tops up your Shadow — automatically.",
+      icon: <PauseCircle className="w-5 h-5" />,
+      title: t("Berhenti sendiri saat pasar jatuh", "Pauses itself when the market falls"),
+      body: t(
+        "Kalau BNB turun sampai posisimu mendekati bahaya, uang saku berikutnya ditahan oleh kontrak, bukan oleh aplikasi. Begitu pulih, yang tertunda dibayar.",
+        "If BNB falls far enough to put the position near danger, the next allowance is held by the contract, not by the app. Once it recovers, what was owed is paid.",
+      ),
       tone: "amber",
       span: "sm:col-span-2 lg:col-span-2 lg:row-span-2",
       layout: "big",
-      visual: <PeakVisual />,
+      visual: <GateVisual />,
     },
     {
       icon: <ShieldCheck className="w-5 h-5" />,
-      title: "BNB stays untouched",
-      body: "Collateral never leaves the CDP trove — only the borrowed dollars move.",
+      title: t("BNB tidak disentuh", "BNB stays untouched"),
+      body: t("Jaminan tidak pernah keluar dari vault. Yang bergerak hanya dolar pinjaman.", "Collateral never leaves the vault. Only the borrowed dollars move."),
       tone: "sage",
       span: "",
       layout: "compact",
     },
     {
       icon: <Lock className="w-5 h-5" />,
-      title: "Non-custodial",
-      body: "Every vault is a clone you alone control. Cermin can't touch your funds.",
+      title: t("Batas izin yang keras", "A hard spending cap"),
+      body: t("Kamu tentukan batas total yang boleh dikirim. Kontrak tidak akan melewatinya.", "You set the most that may ever be sent. The contract never goes past it."),
       tone: "peach",
       span: "",
       layout: "compact",
     },
     {
       icon: <Bot className="w-5 h-5" />,
-      title: "Defends every dip",
-      body: "The keeper — or anyone — repays debt the instant your ICR drops, before liquidation.",
+      title: t("Penjaga anti-likuidasi", "A guard against liquidation"),
+      body: t("Penjaga otomatis mencicil utang dari tabungan cadangan jauh sebelum garis likuidasi.", "An automatic guard repays debt from the savings reserve well before the liquidation line."),
       tone: "info",
       span: "",
       layout: "compact",
     },
     {
-      icon: <Sparkles className="w-5 h-5" />,
-      title: "Live in 60 seconds",
-      body: "Connect, pick a preset, sign once. Your Shadow is running before your coffee's cold.",
+      icon: <Wallet className="w-5 h-5" />,
+      title: t("Kamu yang pegang kendali", "You stay in control"),
+      body: t("Setiap vault adalah kontrak milikmu. Jadwal bisa dibatalkan kapan saja.", "Every vault is your own contract. Any schedule can be cancelled at any time."),
       tone: "sage",
       span: "",
       layout: "compact",
     },
     {
-      icon: <TrendingUp className="w-5 h-5" />,
-      title: "Auto-yield on idle",
-      body: "Idle dollars route into the sMUSD savings vault at ~5% APR — compounding while you sleep.",
+      icon: <BookOpen className="w-5 h-5" />,
+      title: t("Buku tabungan dalam Rupiah", "A passbook in Rupiah"),
+      body: t(
+        "Setiap pembayaran dan penahanan tercatat on-chain dan tampil dalam Rupiah, jadi orang tua dan anak membaca angka yang sama.",
+        "Every payment and every hold is recorded on-chain and shown in Rupiah, so parent and child read the same numbers.",
+      ),
       tone: "amber",
       span: "sm:col-span-2 lg:col-span-4",
       layout: "banner",
-      visual: <YieldVisual />,
+      visual: <PassbookVisual />,
     },
   ];
   return (
@@ -164,15 +174,16 @@ export function Features() {
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-[0.5]"
-          style={{ backgroundImage: "url(/features-tranquil-town.webp)" }}
+          style={{ backgroundImage: "url(/saku-features-tranquil-town.webp)" }}
         />
         <div className="absolute inset-0 bg-canvas/45" />
       </div>
       <div className="relative z-10 mx-auto max-w-6xl px-5 sm:px-8">
         <Reveal className="max-w-2xl mb-14">
-          <Eyebrow icon={<Sparkles className="w-3.5 h-3.5" />} label="Features" note="why Cermin" />
+          <Eyebrow icon={<Sparkles className="w-3.5 h-3.5" />} label={t("Kenapa Cermin Saku", "Why Cermin Saku")} />
           <h2 className="font-serif text-3xl md:text-[2.75rem] font-medium tracking-[-0.02em] leading-[1.08] text-balance mt-5">
-            A bank account that <em className="italic font-normal text-amber-600">runs itself.</em>
+            {t("Uang saku yang ", "An allowance that ")}
+            <em className="italic font-normal text-amber-600">{t("tahu kapan menahan diri.", "knows when to hold back.")}</em>
           </h2>
         </Reveal>
 

@@ -1,33 +1,43 @@
-import { Layers, Coins, SlidersHorizontal, Wallet, TrendingUp } from "lucide-react";
+"use client";
+
+import { Layers, Coins, CalendarClock, ShieldCheck } from "lucide-react";
+import { useLang } from "@/lib/i18n";
 import { Reveal } from "@/components/ui/Reveal";
 import { Badge } from "@/components/ui/Badge";
 import { IsoArt } from "@/components/landing/LandingArt";
 import { Eyebrow } from "./Eyebrow";
 
 export function HowItWorks() {
+  const { t } = useLang();
   const steps = [
     {
       n: "001",
-      title: "Deposit BNB",
-      body:
-        "Lock as much BNB as you want. It sits in a CDP trove — yours, never sold. Cermin only ever touches the dollars borrowed against it.",
+      title: t("Setor BNB", "Deposit BNB"),
+      body: t(
+        "Kunci BNB di vault milikmu sendiri. BNB itu tidak pernah dijual; yang dipakai hanya dolar digital (MUSD) yang dipinjam di atasnya.",
+        "Lock BNB in a vault that is yours alone. That BNB is never sold; only the digital dollars (MUSD) borrowed against it are used.",
+      ),
       icon: <Coins className="w-7 h-7" />,
       variant: "diamond" as const,
     },
     {
       n: "002",
-      title: "Pick a strategy",
-      body:
-        "Conservative, Balanced or Aggressive. One choice sets your borrow ratio, skim threshold and the ICR lines where defense kicks in.",
-      icon: <SlidersHorizontal className="w-7 h-7" />,
+      title: t("Jadwalkan uang saku", "Schedule the allowance"),
+      body: t(
+        "Tentukan nominal, seberapa sering, berapa kali, dan dompet penerimanya. Uang saku diambil dari saldo pakai vault, tidak pernah melebihi batas yang kamu izinkan.",
+        "Choose the amount, how often, how many times, and the wallet that receives it. It is paid from the vault's spendable balance, never beyond the limit you allow.",
+      ),
+      icon: <CalendarClock className="w-7 h-7" />,
       variant: "square" as const,
     },
     {
       n: "003",
-      title: "Live on the Shadow",
-      body:
-        "Cermin borrows MUSD against your BNB and routes it to spend or to the sMUSD savings vault — topping up on every peak, defending every dip.",
-      icon: <Wallet className="w-7 h-7" />,
+      title: t("Kontrak yang menjaga", "The contract keeps watch"),
+      body: t(
+        "Sebelum setiap pembayaran, kontrak memeriksa dua hal: posisinya sehat, dan cadangannya tetap cukup kalau BNB turun 30% lagi. Kalau belum aman, uang saku ditahan, bukan hilang, lalu dibayar begitu pulih.",
+        "Before every payment the contract checks two things: the position is healthy, and the reserve would survive another 30% fall in BNB. If not, the allowance is held, not lost, and paid once it recovers.",
+      ),
+      icon: <ShieldCheck className="w-7 h-7" />,
       variant: "circle" as const,
     },
   ];
@@ -37,7 +47,7 @@ export function HowItWorks() {
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-[0.55]"
-          style={{ backgroundImage: "url(/how-it-works-three-scenes.webp)" }}
+          style={{ backgroundImage: "url(/saku-how-it-works-three-scenes.webp)" }}
         />
         <div className="absolute inset-0 bg-canvas/45" />
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-canvas to-transparent" />
@@ -45,13 +55,16 @@ export function HowItWorks() {
       </div>
       <div className="relative z-10 mx-auto max-w-6xl px-5 sm:px-8">
         <Reveal className="max-w-2xl mb-16">
-          <Eyebrow icon={<Layers className="w-3.5 h-3.5" />} label="How it works" note="deposit → spend" />
+          <Eyebrow icon={<Layers className="w-3.5 h-3.5" />} label={t("Cara kerja", "How it works")} note={t("setor → jadwal → aman", "deposit → schedule → safe")} />
           <h2 className="font-serif text-3xl md:text-[2.75rem] font-medium tracking-[-0.02em] leading-[1.08] text-balance mt-5">
-            Three steps. One vault. <em className="italic font-normal text-amber-600">Zero sales.</em>
+            {t("Tiga langkah. Satu vault. ", "Three steps. One vault. ")}
+            <em className="italic font-normal text-amber-600">{t("Tanpa menjual BNB.", "No BNB sold.")}</em>
           </h2>
           <p className="text-muted mt-4 text-pretty leading-relaxed">
-            Cermin is a thin app that orchestrates CDP primitives on BNB Chain — so the risk model
-            is the chain&apos;s, not ours.
+            {t(
+              "Orang tua menyetor sekali dan mengatur jadwal. Sisanya dikerjakan kontrak di BNB Chain, termasuk tahu kapan harus berhenti.",
+              "The parent deposits once and sets a schedule. The contracts on BNB Chain do the rest, including knowing when to stop.",
+            )}
           </p>
         </Reveal>
 
@@ -72,20 +85,20 @@ export function HowItWorks() {
                   {i === 0 && (
                     <div className="mt-5 inline-flex items-center gap-2 text-xs text-muted font-mono">
                       <span className="w-1.5 h-1.5 rounded-full bg-mint" />
-                      Min ~0.05 BNB
+                      {t("Mulai dari ±0,05 BNB", "From about 0.05 BNB")}
                     </div>
                   )}
                   {i === 1 && (
                     <div className="mt-5 flex flex-wrap gap-1.5">
-                      <Badge variant="default">Conservative</Badge>
-                      <Badge variant="amber">Balanced ⭐</Badge>
-                      <Badge variant="default">Aggressive</Badge>
+                      <Badge variant="default">{t("Harian", "Daily")}</Badge>
+                      <Badge variant="default">{t("Mingguan", "Weekly")}</Badge>
+                      <Badge variant="amber">{t("Bulanan", "Monthly")} ⭐</Badge>
                     </div>
                   )}
                   {i === 2 && (
                     <div className="mt-5 inline-flex items-center gap-2 text-xs text-success font-mono">
-                      <TrendingUp className="w-3.5 h-3.5" />
-                      Auto-skim on BNB peaks
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      {t("Ditahan otomatis saat bahaya", "Held automatically when unsafe")}
                     </div>
                   )}
                 </Reveal>

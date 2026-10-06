@@ -1,4 +1,7 @@
+"use client";
+
 import { Moon } from "lucide-react";
+import { useLang } from "@/lib/i18n";
 import { Reveal } from "@/components/ui/Reveal";
 import { Card } from "@/components/ui/Card";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
@@ -24,6 +27,7 @@ function Row({ label, value, mono }: { label: string; value: string; mono?: bool
 }
 
 export function ShadowSection() {
+  const { t } = useLang();
   return (
     <section className="py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
@@ -32,48 +36,48 @@ export function ShadowSection() {
             <div aria-hidden className="pointer-events-none absolute inset-0">
               <div
                 className="absolute inset-0 bg-cover bg-center opacity-60"
-                style={{ backgroundImage: "url(/shadow-night-warmth.webp)" }}
+                style={{ backgroundImage: "url(/saku-shadow-night-warmth.webp)" }}
               />
               <div className="absolute inset-0 bg-gradient-to-r from-shadow-900 via-shadow-900/85 to-shadow-900/60" />
             </div>
             <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-amber-500/40 blur-3xl pointer-events-none animate-float" />
             <div className="relative grid md:grid-cols-2 gap-8 items-center">
               <div>
-                <Eyebrow tone="light" icon={<Moon className="w-3.5 h-3.5" />} label="The Shadow" />
+                <Eyebrow tone="light" icon={<Moon className="w-3.5 h-3.5" />} label={t("Saat pasar jatuh", "When the market falls")} />
                 <h2 className="font-serif text-3xl md:text-[2.75rem] font-medium tracking-[-0.02em] leading-[1.08] text-balance mt-5">
-                  Spend the dollars. <em className="italic font-normal text-amber-300">Keep the BNB.</em>
+                  {t("Kamu tidur. ", "You sleep. ")}
+                  <em className="italic font-normal text-amber-300">{t("Kontraknya tetap terjaga.", "The contract stays awake.")}</em>
                 </h2>
                 <p className="text-white/70 mt-4 text-pretty leading-relaxed">
-                  The Shadow is your spendable balance — MUSD borrowed against your
-                  BNB. Withdraw to a card, save it in sMUSD, or both. Your BNB just
-                  sits there appreciating.
+                  {t(
+                    "Tidak perlu memantau grafik. Setiap amplop diperiksa kontrak di harga saat itu. Kalau posisinya terlalu dekat zona bahaya, amplop dicap DITAHAN dan cadangan dipakai untuk membela vault lebih dulu.",
+                    "No chart-watching. Every envelope is checked by the contract at that moment's price. If the position is too close to danger, the envelope is stamped HELD and the reserve defends the vault first.",
+                  )}
                 </p>
                 <div className="grid grid-cols-2 gap-3 mt-7 max-w-md">
-                  <Stat label="Borrow APR" value="1%" sub="fixed at open" />
-                  <Stat label="Vault APR" value="~5%" sub="sMUSD savings" />
-                  <Stat label="Max LTV" value="90%" sub="CDP cap" />
-                  <Stat label="On-chain" value="2 contracts" sub="lean by design" />
+                  <Stat label={t("Uang saku berhenti", "Allowance pauses")} value="< 150%" sub={t("rasio jaminan", "collateral ratio")} />
+                  <Stat label={t("Penjaga membela", "Guard defends")} value="140%" sub={t("dari tabungan cadangan", "from the savings reserve")} />
+                  <Stat label={t("Uji tahan", "Stress test")} value="−30%" sub={t("cadangan harus tahan", "the reserve must survive")} />
+                  <Stat label={t("Likuidasi", "Liquidation")} value="110%" sub={t("dijaga jauh di atasnya", "kept well above it")} />
                 </div>
               </div>
               <div className="bg-surface rounded-3xl p-6 shadow-pop relative">
                 <div className="text-xs uppercase tracking-[0.18em] text-amber-600 font-mono mb-1">
-                  Available now
+                  {t("Uang saku Rara", "Rara's allowance")}
                 </div>
                 <AnimatedNumber
-                  value={2847.32}
+                  value={500000}
                   durationMs={1400}
-                  format={(n) =>
-                    "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                  }
+                  format={(n) => "Rp " + Math.round(n).toLocaleString("id-ID")}
                   className="block text-5xl font-semibold tabular-nums tracking-tight text-ink"
                 />
-                <div className="text-sm text-muted mt-1">MUSD spendable</div>
+                <div className="text-sm text-muted mt-1">{t("tiap bulan · ke dompet anak", "every month · to the child's wallet")}</div>
                 <div className="grid grid-cols-3 gap-2 mt-6">
-                  {["Withdraw", "Top up", "Save"].map((a, i) => (
+                  {[t("Dibayar", "Paid"), t("Ditahan", "Held"), t("Dibayar", "Paid")].map((a, i) => (
                     <div
-                      key={a}
+                      key={i}
                       className={`rounded-2xl py-3 px-2 text-center text-sm font-medium transition-colors ${
-                        i === 0 ? "bg-ink text-white" : "bg-surface-soft text-ink hover:bg-cream-300"
+                        i === 1 ? "bg-stempel-soft text-danger" : "bg-leaf-50 text-leaf-700"
                       }`}
                     >
                       {a}
@@ -81,9 +85,9 @@ export function ShadowSection() {
                   ))}
                 </div>
                 <div className="mt-6 pt-5 border-t border-line space-y-3">
-                  <Row label="BNB locked" value="0.847 BNB" />
-                  <Row label="In sMUSD vault" value="$12,420" />
-                  <Row label="ICR · health" value="218% · Safe" mono />
+                  <Row label={t("BNB terkunci", "BNB locked")} value="1,68 BNB" />
+                  <Row label={t("Cadangan pembela", "Defense reserve")} value="Rp 6.000.000" />
+                  <Row label={t("Rasio · status", "Ratio · status")} value={t("200% · Aman", "200% · Safe")} mono />
                 </div>
               </div>
             </div>

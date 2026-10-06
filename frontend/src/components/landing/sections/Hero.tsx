@@ -3,10 +3,12 @@
 import { useRef } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
+import Link from "next/link";
 import { ArrowRight, ArrowDown } from "lucide-react";
 import { fadeUp } from "@/lib/motion";
 import { Button } from "@/components/ui/Button";
 import { LineShadowText } from "@/components/ui/LineShadowText";
+import { useLang } from "@/lib/i18n";
 
 function scrollToId(id: string) {
   if (typeof document === "undefined") return;
@@ -20,6 +22,7 @@ export function Hero({
   launchHref: string | null;
   onLaunch?: () => void;
 }) {
+  const { t, lang } = useLang();
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
@@ -48,7 +51,7 @@ export function Hero({
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: "radial-gradient(rgba(14,31,56,0.10) 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(rgba(92,84,72,0.10) 1px, transparent 1px)",
             backgroundSize: "24px 24px",
             maskImage: "radial-gradient(120% 65% at 50% 12%, black, transparent 60%)",
             WebkitMaskImage: "radial-gradient(120% 65% at 50% 12%, black, transparent 60%)",
@@ -68,50 +71,65 @@ export function Hero({
           variants={fadeUp}
           className="font-serif font-medium text-ink text-[2.1rem] sm:text-4xl md:text-5xl lg:text-[3.5rem] tracking-[-0.03em] leading-[1.05] text-balance"
         >
-          Your BNB stays <em className="font-normal italic">whole</em>.
-          <br />
-          <span className="font-normal italic text-muted-2">The </span>
-          <LineShadowText
-            as="span"
-            shadowColor="#1E4A8F"
-            className="font-normal italic text-ink"
-          >
-            Shadow
-          </LineShadowText>{" "}
-          is what you <em className="font-normal italic text-amber-600">live&nbsp;on</em>.
+          {lang === "id" ? (
+            <>
+              BNB-mu tetap <em className="font-normal italic">utuh</em>.
+              <br />
+              <LineShadowText as="span" shadowColor="#35648F" className="font-normal italic text-ink">
+                Uang saku
+              </LineShadowText>{" "}
+              anakmu tetap <em className="font-normal italic text-amber-600">jalan</em>.
+            </>
+          ) : (
+            <>
+              Your BNB stays <em className="font-normal italic">whole</em>.
+              <br />
+              <span className="font-normal italic text-muted-2">Your child&apos;s </span>
+              <LineShadowText as="span" shadowColor="#35648F" className="font-normal italic text-ink">
+                allowance
+              </LineShadowText>{" "}
+              keeps <em className="font-normal italic text-amber-600">coming</em>.
+            </>
+          )}
         </motion.h1>
 
         <motion.p
           variants={fadeUp}
           className="mt-5 text-sm sm:text-base md:text-lg text-muted max-w-2xl mx-auto text-pretty leading-relaxed"
         >
-          Self-driving BNB banking on BNB Chain. Deposit BNB once and draw a dollar
-          allowance forever — Cermin skims the peaks, defends the dips, and never
-          sells your BNB.
+          {t(
+            "Setor BNB sekali. Cermin Saku meminjam dolar di atasnya dan mengirim uang saku ke dompet anakmu sesuai jadwal. Saat BNB jatuh terlalu dalam, kontraknya sendiri menahan pembayaran sampai aman lagi.",
+            "Deposit BNB once. Cermin Saku borrows dollars against it and sends your child's allowance on schedule. When BNB falls too far, the contract itself holds the payment until it is safe again.",
+          )}
         </motion.p>
 
         <motion.div variants={fadeUp} className="mt-7 flex flex-col items-center gap-3">
           {launchHref && onLaunch ? (
             <Button variant="primary" size="xl" onClick={onLaunch}>
-              Open dashboard
+              {t("Buka dasbor", "Open dashboard")}
               <ArrowRight className="w-4 h-4" />
             </Button>
           ) : (
             <ConnectButton.Custom>
               {({ openConnectModal }) => (
                 <Button variant="primary" size="xl" onClick={openConnectModal}>
-                  Launch app
+                  {t("Buka aplikasi", "Launch app")}
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               )}
             </ConnectButton.Custom>
           )}
-          <button
-            onClick={() => scrollToId("how")}
-            className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink transition-colors"
-          >
-            See how it works <ArrowDown className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+            <button
+              onClick={() => scrollToId("how")}
+              className="inline-flex items-center gap-1.5 text-muted hover:text-ink transition-colors"
+            >
+              {t("Lihat cara kerjanya", "See how it works")} <ArrowDown className="w-3.5 h-3.5" />
+            </button>
+            <Link href="/demo" className="inline-flex items-center gap-1.5 text-muted hover:text-ink transition-colors">
+              {t("Coba tanpa dompet", "Try it without a wallet")} <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </motion.div>
       </motion.div>
 
@@ -124,7 +142,7 @@ export function Hero({
           style={{
             y: sceneY,
             scale: sceneScale,
-            backgroundImage: "url(/hero-horizon-figure.webp)",
+            backgroundImage: "url(/saku-hero-horizon-figure.webp)",
             maskImage:
               "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 16%, #000 38%)",
             WebkitMaskImage:

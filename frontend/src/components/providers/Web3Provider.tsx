@@ -32,8 +32,8 @@ function MountShell() {
   );
 }
 
-// Passbook-ink accent for the connect button and modals (white on #1E4A8F = 8.63:1).
-const RK_THEME = lightTheme({ accentColor: "#1E4A8F", accentColorForeground: "#FFFFFF", borderRadius: "medium" });
+// Brown-ink accent for the connect button and modals, as on the landing buttons.
+const RK_THEME = lightTheme({ accentColor: "#1F1B17", accentColorForeground: "#FCFBF8", borderRadius: "large" });
 
 // Provider tree lives in its own component so it only renders after mount.
 // The wagmi config (and the WalletConnect connector it spins up) is created

@@ -8,9 +8,10 @@ import {
   Vault,
   DollarSign,
   Activity,
-  PiggyBank,
+  Mail,
   ShieldCheck,
 } from "lucide-react";
+import { useLang } from "@/lib/i18n";
 
 /* ── Isometric line-art slab ──────────────────────────────────────────────
    A blueprint-style iso platform with a floating motif and an overlaid icon.
@@ -26,11 +27,11 @@ export function IsoArt({
 }) {
   const float =
     variant === "circle" ? (
-      <circle cx="160" cy="95" r="30" stroke="#1E4A8F" strokeWidth="1.5" strokeDasharray="4 4" />
+      <circle cx="160" cy="95" r="30" stroke="#35648F" strokeWidth="1.5" strokeDasharray="4 4" />
     ) : variant === "square" ? (
-      <rect x="130" y="65" width="60" height="60" rx="8" stroke="#1E4A8F" strokeWidth="1.5" strokeDasharray="4 4" />
+      <rect x="130" y="65" width="60" height="60" rx="8" stroke="#35648F" strokeWidth="1.5" strokeDasharray="4 4" />
     ) : (
-      <path d="M160 65 L206 95 L160 125 L114 95 Z" stroke="#1E4A8F" strokeWidth="1.5" strokeDasharray="4 4" />
+      <path d="M160 65 L206 95 L160 125 L114 95 Z" stroke="#35648F" strokeWidth="1.5" strokeDasharray="4 4" />
     );
 
   return (
@@ -42,17 +43,17 @@ export function IsoArt({
       className={`relative w-full max-w-[320px] mx-auto ${className ?? ""}`}
     >
       <svg viewBox="0 0 320 280" fill="none" className="block w-full">
-        <ellipse cx="160" cy="240" rx="98" ry="20" fill="#0E1F38" opacity="0.06" />
+        <ellipse cx="160" cy="240" rx="98" ry="20" fill="#1F1B17" opacity="0.06" />
         {/* slab faces */}
-        <path d="M68 200 L68 216 L160 256 L160 240 Z" fill="#D5DEEA" stroke="#2A3A54" strokeWidth="1.25" strokeLinejoin="round" />
-        <path d="M160 240 L160 256 L252 216 L252 200 Z" fill="#B8C6D9" stroke="#2A3A54" strokeWidth="1.25" strokeLinejoin="round" />
-        <path d="M160 160 L252 200 L160 240 L68 200 Z" fill="#FFFFFF" stroke="#2A3A54" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M68 200 L68 216 L160 256 L160 240 Z" fill="#E6E0D4" stroke="#3A3530" strokeWidth="1.25" strokeLinejoin="round" />
+        <path d="M160 240 L160 256 L252 216 L252 200 Z" fill="#D2C8B6" stroke="#3A3530" strokeWidth="1.25" strokeLinejoin="round" />
+        <path d="M160 160 L252 200 L160 240 L68 200 Z" fill="#FCFBF8" stroke="#3A3530" strokeWidth="1.5" strokeLinejoin="round" />
         {/* faint grid lines on top face */}
-        <path d="M114 180 L206 220 M206 180 L114 220" stroke="#2A3A54" strokeWidth="0.75" opacity="0.25" />
+        <path d="M114 180 L206 220 M206 180 L114 220" stroke="#3A3530" strokeWidth="0.75" opacity="0.25" />
         {/* dotted trajectory */}
-        <circle cx="160" cy="134" r="1.6" fill="#1E4A8F" />
-        <circle cx="160" cy="146" r="1.6" fill="#1E4A8F" opacity="0.7" />
-        <circle cx="160" cy="158" r="1.6" fill="#1E4A8F" opacity="0.4" />
+        <circle cx="160" cy="134" r="1.6" fill="#35648F" />
+        <circle cx="160" cy="146" r="1.6" fill="#35648F" opacity="0.7" />
+        <circle cx="160" cy="158" r="1.6" fill="#35648F" opacity="0.4" />
         {/* floating motif — gentle hover */}
         <motion.g
           animate={{ y: [0, -6, 0] }}
@@ -75,31 +76,30 @@ export function IsoArt({
 /* ── Orchestration diagram ────────────────────────────────────────────────
    Cermin at the hub, CDP primitives on an arc, connectors that draw in when
    the section enters view. A toggle reframes the same vault for two audiences. */
-type Persona = "savers" | "spenders";
+type Persona = "parents" | "children";
 
-const NODES: {
-  id: string;
-  label: string;
-  sub: string;
-  icon: React.ReactNode;
-  x: number;
-  y: number;
-}[] = [
-  { id: "trove", label: "Trove", sub: "BNB collateral", icon: <Vault className="w-5 h-5" />, x: 150, y: 250 },
-  { id: "musd", label: "MUSD", sub: "1% borrow", icon: <DollarSign className="w-5 h-5" />, x: 322, y: 138 },
-  { id: "feed", label: "PriceFeed", sub: "on-chain oracle", icon: <Activity className="w-5 h-5" />, x: 500, y: 98 },
-  { id: "savings", label: "sMUSD", sub: "~5% yield", icon: <PiggyBank className="w-5 h-5" />, x: 678, y: 138 },
-  { id: "liq", label: "Defense", sub: "anti-liquidation", icon: <ShieldCheck className="w-5 h-5" />, x: 850, y: 250 },
+type Node = { id: string; label: string; sub: string; icon: React.ReactNode; x: number; y: number };
+
+const nodes = (t: (id: string, en: string) => string): Node[] => [
+  { id: "vault", label: t("Vault BNB", "BNB vault"), sub: t("jaminan, tidak dijual", "collateral, never sold"), icon: <Vault className="w-5 h-5" />, x: 150, y: 250 },
+  { id: "musd", label: "MUSD", sub: t("dolar pinjaman", "borrowed dollars"), icon: <DollarSign className="w-5 h-5" />, x: 322, y: 138 },
+  { id: "feed", label: t("Harga BNB", "BNB price"), sub: t("dibaca on-chain", "read on-chain"), icon: <Activity className="w-5 h-5" />, x: 500, y: 98 },
+  { id: "saku", label: t("Amplop", "Envelopes"), sub: t("jadwal uang saku", "allowance schedule"), icon: <Mail className="w-5 h-5" />, x: 678, y: 138 },
+  { id: "guard", label: t("Penjaga", "Guard"), sub: t("bela sebelum likuidasi", "defends before liquidation"), icon: <ShieldCheck className="w-5 h-5" />, x: 850, y: 250 },
 ];
 
 const CENTER = { x: 500, y: 430 };
 
-const CAPTIONS: Record<Persona, string> = {
-  savers:
-    "Cermin borrows MUSD against your BNB and compounds it in the sMUSD savings vault — a dollar allowance that grows while your BNB stays whole.",
-  spenders:
-    "Borrow against your BNB and spend the dollars now. Cermin defends the position through every dip, and you reclaim your full BNB whenever you close.",
-};
+const captions = (t: (id: string, en: string) => string): Record<Persona, string> => ({
+  parents: t(
+    "Setor sekali, atur jadwal, selesai. Uang saku terkirim tiap periode, BNB-mu tetap utuh, dan pembayaran berhenti sendiri saat posisimu butuh dibela.",
+    "Deposit once, set a schedule, done. The allowance goes out every period, your BNB stays whole, and payments pause on their own when the position needs defending.",
+  ),
+  children: t(
+    "Uang saku masuk ke dompetmu sesuai jadwal. Kalau sedang ditahan, kamu bisa lihat alasannya, dan amplopnya tetap terutang sampai dibayar.",
+    "Your allowance lands in your wallet on schedule. If one is held, you can see why, and the envelope stays owed until it is paid.",
+  ),
+});
 
 function arc(x: number, y: number) {
   const cx = (CENTER.x + x) / 2;
@@ -118,14 +118,17 @@ const drawPath: Variants = {
 };
 
 export function OrchestrationDiagram() {
-  const [persona, setPersona] = useState<Persona>("savers");
+  const { t } = useLang();
+  const [persona, setPersona] = useState<Persona>("parents");
+  const NODES = nodes(t);
+  const CAPTIONS = captions(t);
 
   return (
     <div>
       <div className="relative w-full aspect-[25/14] sm:aspect-[25/12] rounded-3xl border border-cream-300 bg-surface/40 overflow-hidden">
         {/* atmosphere */}
         <div className="absolute inset-0 bg-grid-soft opacity-50" />
-        <div className="absolute inset-0 bg-[radial-gradient(80%_60%_at_50%_110%,rgba(30,74,143,0.12),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(80%_60%_at_50%_110%,rgba(53,100,143,0.12),transparent_60%)]" />
 
         {/* connectors — draw in on view */}
         <motion.svg
@@ -141,7 +144,7 @@ export function OrchestrationDiagram() {
             <motion.path
               key={n.id}
               d={arc(n.x, n.y)}
-              stroke="#1E4A8F"
+              stroke="#35648F"
               strokeWidth="1.5"
               strokeLinecap="round"
               variants={drawPath}
@@ -195,13 +198,13 @@ export function OrchestrationDiagram() {
       {/* persona toggle + caption */}
       <div className="mt-7 flex flex-col items-center">
         <div className="inline-flex items-center gap-1 rounded-full bg-surface-soft border border-cream-300 p-1">
-          {(["savers", "spenders"] as Persona[]).map((p) => {
+          {(["parents", "children"] as Persona[]).map((p) => {
             const isActive = persona === p;
             return (
               <button
                 key={p}
                 onClick={() => setPersona(p)}
-                className={`relative px-4 h-9 rounded-full text-sm font-medium capitalize transition-colors duration-200 ${
+                className={`relative px-4 h-9 rounded-full text-sm font-medium transition-colors duration-200 ${
                   isActive ? "text-white" : "text-muted hover:text-ink"
                 }`}
               >
@@ -212,7 +215,7 @@ export function OrchestrationDiagram() {
                     className="absolute inset-0 rounded-full bg-ink shadow-soft"
                   />
                 )}
-                <span className="relative z-10">For {p}</span>
+                <span className="relative z-10">{p === "parents" ? t("Untuk orang tua", "For parents") : t("Untuk anak", "For children")}</span>
               </button>
             );
           })}

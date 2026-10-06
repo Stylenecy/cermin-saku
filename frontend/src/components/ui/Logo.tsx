@@ -2,13 +2,13 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 /**
- * Cermin Saku lockup: Kiel's Cermin "C-mirror" mark (kept as a sign of where
- * the engine comes from) + a typographic wordmark. No new pictorial logo.
+ * Cermin Saku lockup — Cermin's "C-mirror" mark (public/logo.png, transparent)
+ * plus the serif wordmark, "Saku" set in italic lake blue.
  */
 export function Logo({
   className,
   withWordmark = true,
-  size = 28,
+  size = 32,
 }: {
   className?: string;
   withWordmark?: boolean;
@@ -16,10 +16,16 @@ export function Logo({
 }) {
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
-      <Image src="/logo.png" alt="" width={size} height={size} className="object-contain" />
+      <Image
+        src="/logo.png"
+        alt="Cermin Saku"
+        width={size}
+        height={size}
+        className="object-contain"
+      />
       {withWordmark && (
-        <span className="text-[17px] leading-none tracking-[-0.02em] text-ink">
-          <span className="font-semibold">Cermin</span> <span className="font-extrabold text-tinta">Saku</span>
+        <span className="font-serif font-medium text-ink tracking-tight text-[17px] leading-none">
+          Cermin <em className="font-normal italic text-amber-600">Saku</em>
         </span>
       )}
     </span>
