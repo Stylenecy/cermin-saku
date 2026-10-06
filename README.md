@@ -11,7 +11,7 @@ when the position is not safe, and pays it once it is. BNB is never sold.
 Built on **Cermin** by Kiel (MIT) · Indonesia Web3 Hackathon 2026 · BSC testnet
 
 <!-- PROOF-LINKS:START -->
-Live app: [cermin-saku.vercel.app](https://cermin-saku.vercel.app) · Demo video: *pending* · On-chain proof page: [/bukti](https://cermin-saku.vercel.app/bukti) · [Contracts on BscScan](#contracts)
+Live app: [cermin-saku.vercel.app](https://cermin-saku.vercel.app) · Demo video: *pending* · Demo vault, no wallet: [/demo](https://cermin-saku.vercel.app/demo) · [Contracts on BscScan](#contracts)
 <!-- PROOF-LINKS:END -->
 
 </div>
@@ -45,7 +45,7 @@ else, with one rule enforced by the contract, not by the app: *survival money co
 
 ## Judge path (5 minutes, no wallet needed)
 
-1. Open the **proof page** (`/bukti` on the live app): a real demo vault on BSC testnet, its scheduled envelopes, and the passbook of every payment and hold, read from event logs.
+1. Open the **demo vault** (`/demo` on the live app): a real demo vault on BSC testnet, its scheduled envelopes, and the passbook of every payment and hold, read from event logs.
 2. Find an envelope stamped **DITAHAN** (held). Click its transaction: the `AllowanceHeld` event carries the reason (`IcrBelowFloor` or `ReserveTooThin`), the ICR and the price at that moment. No MUSD moved.
 3. Drag the **"If BNB goes to Rp X"** slider. Every number is returned by `CerminLens` via `eth_call`, the same math the vault executes.
 4. Read [`CerminVault.sol` → `_sakuStatus`](contracts/src/CerminVault.sol) (the two gates) and [`CerminSaku.sol` → `release`](contracts/src/CerminSaku.sol) (pay or hold).
@@ -136,7 +136,7 @@ flowchart LR
 | BorrowerOperations | [`0xd5F721410C2E2A373bdFA8AD6f43a78E3C6fC462`](https://testnet.bscscan.com/address/0xd5F721410C2E2A373bdFA8AD6f43a78E3C6fC462) | mock CDP |
 | TroveManager | [`0x083D1955830Fe4D1039a2DcedbEfA52a1Df8fB81`](https://testnet.bscscan.com/address/0x083D1955830Fe4D1039a2DcedbEfA52a1Df8fB81) | mock CDP |
 | SavingsVault | [`0x0A668Cbd794a7c7Bb17dfcC6CeD60cc092BF53C4`](https://testnet.bscscan.com/address/0x0A668Cbd794a7c7Bb17dfcC6CeD60cc092BF53C4) | mock savings (sMUSD) |
-| Demo vault | [`0xfe1742bcfe1836d080f690526cd739bbae192a03`](https://testnet.bscscan.com/address/0xfe1742bcfe1836d080f690526cd739bbae192a03) | the vault shown on `/bukti` |
+| Demo vault | [`0xfe1742bcfe1836d080f690526cd739bbae192a03`](https://testnet.bscscan.com/address/0xfe1742bcfe1836d080f690526cd739bbae192a03) | the vault shown on `/demo` |
 <!-- CONTRACTS:END -->
 
 | Contract | Source | Role |

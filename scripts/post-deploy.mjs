@@ -123,12 +123,12 @@ const contracts = [
   '| Contract | Address | Role |',
   '|---|---|---|',
   ...rows.map(([k, role]) => `| ${k} | ${link(dep[k])} | ${role} |`),
-  ...(demoVault !== ZERO ? [`| Demo vault | ${link(demoVault)} | the vault shown on \`/bukti\` |`] : []),
+  ...(demoVault !== ZERO ? [`| Demo vault | ${link(demoVault)} | the vault shown on \`/demo\` |`] : []),
 ].join('\n');
 const proof = [
   site ? `Live app: [${site.replace(/^https?:\/\//, '')}](${site})` : 'Live app: *pending*',
   video ? `Demo video: [YouTube](${video})` : 'Demo video: *pending*',
-  site ? `On-chain proof page: [/bukti](${site.replace(/\/$/, '')}/bukti)` : 'On-chain proof page: *pending*',
+  site ? `Demo vault, no wallet: [/demo](${site.replace(/\/$/, '')}/demo)` : 'Demo vault: *pending*',
   `[Contracts on BscScan](#contracts)`,
 ].join(' · ');
 
