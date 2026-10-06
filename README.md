@@ -7,6 +7,7 @@
 
 Scheduled allowances paid from a BNB vault on BNB Chain. The vault contract itself refuses a payment
 when the position is not safe, and pays it once it is. BNB is never sold.
+Parents sign in with Google or email (a wallet is created for them) or bring their own wallet.
 
 Built on **Cermin** by Kiel (MIT) · Indonesia Web3 Hackathon 2026 · BSC testnet
 
@@ -169,6 +170,8 @@ allowance, run the keeper, move the simulated price and watch payments get held 
 cd frontend && npm ci
 npm run dev   # testnet addresses come from frontend/.env.production, written by scripts/post-deploy.mjs
 ```
+Sign-in uses [Privy](https://privy.io) (Google, email or a wallet; an embedded wallet is created on login) when
+`NEXT_PUBLIC_PRIVY_APP_ID` is set, and falls back to RainbowKit's wallet connect when it is empty.
 
 **Deploy (BSC testnet, one command)**
 ```bash
