@@ -41,6 +41,11 @@ const demoVault = process.env.DEMO_VAULT ?? (await vaultOf(dep.deployer));
 const site = opt('site');
 const local = args.includes('--local');
 const video = opt('video');
+// Privy app id (public): from the environment, or kept from the current .env.production.
+const prodEnvPath = join(root, 'frontend', '.env.production');
+const privyAppId =
+  process.env.NEXT_PUBLIC_PRIVY_APP_ID ??
+  (existsSync(prodEnvPath) ? readFileSync(prodEnvPath, 'utf8').match(/^NEXT_PUBLIC_PRIVY_APP_ID=(.+)$/m)?.[1] : undefined);
 
 // 1. Web app: public addresses only.
 const webEnv = [
@@ -56,6 +61,7 @@ const webEnv = [
   `NEXT_PUBLIC_DEPLOY_BLOCK=${dep.deployBlock}`,
   `NEXT_PUBLIC_MIN_DEBT=${dep.minDebt}`,
   ...(site ? [`NEXT_PUBLIC_SITE_URL=${site.replace(/\/$/, '')}`] : []),
+  ...(privyAppId ? [`NEXT_PUBLIC_PRIVY_APP_ID=${privyAppId}`] : []),
   ...(local ? [`NEXT_PUBLIC_BSC_RPC_URL=${RPC}`] : []),
   '',
 ].join('\n');
