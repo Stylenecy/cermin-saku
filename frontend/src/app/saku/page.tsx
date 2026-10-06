@@ -33,7 +33,7 @@ export default function SakuPage() {
       <main className="mx-auto max-w-6xl px-4 pb-10 pt-10 sm:px-6">
         <p className="text-sm font-semibold uppercase tracking-[0.1em] text-tinta">{t("Atur uang saku", "Manage allowances")}</p>
         <h1 className="mt-2 max-w-3xl text-3xl leading-tight text-ink sm:text-5xl">
-          {t("Amplop terjadwal dari vault BNB-mu", "Scheduled envelopes from your BNB vault")}
+          {t("Amplop terjadwal dari vault BNB‑mu", "Scheduled envelopes from your BNB vault")}
         </h1>
 
         {!sakuDeployed() ? (

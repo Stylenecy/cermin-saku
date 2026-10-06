@@ -32,7 +32,7 @@ export default function HomePage() {
               {t("BNB Chain · testnet · dibangun di atas Cermin (Kiel, MIT)", "BNB Chain · testnet · built on Cermin (Kiel, MIT)")}
             </p>
             <h1 className="mt-4 text-[2.4rem] leading-[1.06] text-ink sm:text-6xl">
-              {t("Uang saku dari BNB-mu, yang tahu kapan harus menahan diri.", "An allowance from your BNB that knows when to hold back.")}
+              {t("Uang saku dari BNB‑mu, yang tahu kapan harus menahan diri.", "An allowance from your BNB that knows when to hold back.")}
             </h1>
             <p className="mt-6 max-w-xl text-pretty text-lg leading-relaxed text-muted">
               {t(

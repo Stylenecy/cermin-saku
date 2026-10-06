@@ -12,6 +12,7 @@ import { Envelope, type EnvelopeState } from "./Envelope";
 const PRICE = [100, 104, 97, 84, 78, 88, 99, 103]; // % of opening price (illustrative)
 const SAKU_LINE = 90;
 const STATES: EnvelopeState[] = ["paid", "paid", "paid", "held", "held", "paid", "due", "upcoming"];
+const HELD_CENTER = ((STATES.indexOf("held") + STATES.lastIndexOf("held") + 1) / 2 / STATES.length) * 100;
 
 export function EnvelopeTimeline() {
   const { t } = useLang();
@@ -36,10 +37,20 @@ export function EnvelopeTimeline() {
           {t("harga BNB", "BNB price")}
         </text>
       </svg>
-      <div className="mt-2 grid grid-cols-8 gap-1.5 sm:gap-3">
-        {STATES.map((s, i) => (
-          <Envelope key={i} state={s} />
-        ))}
+      <div className="relative mt-2">
+        <div className="grid grid-cols-8 gap-1.5 sm:gap-3">
+          {STATES.map((s, i) => (
+            <Envelope key={i} state={s} quiet />
+          ))}
+        </div>
+        {/* one stamp across the held run; the envelopes are too small for one each */}
+        <span
+          className="stamp stamp-in pointer-events-none absolute top-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface/90 text-stempel text-[10px] sm:text-xs"
+          style={{ left: `${HELD_CENTER}%` }}
+          aria-hidden
+        >
+          Ditahan
+        </span>
       </div>
       <figcaption className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <span>

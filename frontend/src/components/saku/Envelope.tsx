@@ -11,10 +11,13 @@ export function Envelope({
   state,
   className,
   label,
+  quiet = false,
 }: {
   state: EnvelopeState;
   className?: string;
   label?: string;
+  /** Small envelopes: a red seal instead of the text stamp (the parent draws one stamp). */
+  quiet?: boolean;
 }) {
   const faded = state === "upcoming";
   return (
@@ -30,8 +33,14 @@ export function Envelope({
           </g>
         )}
         {state === "due" && <circle cx="60" cy="47" r="7" className="fill-tinta" />}
+        {state === "held" && quiet && (
+          <g>
+            <circle cx="60" cy="47" r="13" className="fill-stempel" />
+            <path d="M54 41 l12 12 M66 41 l-12 12" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
+          </g>
+        )}
       </svg>
-      {state === "held" && (
+      {state === "held" && !quiet && (
         <span className="stamp stamp-in absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface/85 text-stempel text-[10px] sm:text-xs">
           Ditahan
         </span>
