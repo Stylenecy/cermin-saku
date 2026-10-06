@@ -17,6 +17,11 @@ set -a; . ./wallets.env; set +a
 echo "== deployer $DEPLOYER_ADDRESS"
 bal=$(cast balance "$DEPLOYER_ADDRESS" --rpc-url "$RPC")
 echo "   balance $(cast from-wei "$bal") tBNB"
+# Deploy ~0.01 tBNB gas + demo vault 0.1 + keeper 0.02 + demo txs. Stop early instead of half-deploying.
+MIN_WEI="${MIN_DEPLOYER_WEI:-150000000000000000}"
+if [ ! -f "contracts/$OUT" ] && python -c "import sys; sys.exit(0 if int('$bal') >= int('$MIN_WEI') else 1)"; then :; elif [ ! -f "contracts/$OUT" ]; then
+  echo "!! deployer needs >= $(cast from-wei "$MIN_WEI") tBNB (faucet: https://www.bnbchain.org/en/testnet-faucet)"; exit 2
+fi
 
 # Seed the simulated feed with today's Chainlink BNB/USD (8 decimals -> 1e18).
 answer=$(cast call "$CHAINLINK_BNB_USD" "latestRoundData()(uint80,int256,uint256,uint256,uint80)" --rpc-url "$RPC" 2>/dev/null | sed -n 2p | awk '{print $1}' || true)
@@ -52,3 +57,7 @@ if ! npx tsx scripts/demo.ts status >/dev/null 2>&1; then
   npx tsx scripts/demo.ts schedule --to "$CHILD_ADDRESS" --musd "${DEMO_MUSD:-1.4}" --period "${DEMO_PERIOD:-300}" --count 12 --label "Uang saku Rara"
 fi
 npx tsx scripts/demo.ts status
+
+echo "== wire web app + keeper + README"
+cd ..
+node scripts/post-deploy.mjs "$OUT" ${REHEARSAL:+--local} ${SITE_URL:+--site "$SITE_URL"} ${VIDEO_URL:+--video "$VIDEO_URL"}
