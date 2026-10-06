@@ -54,6 +54,7 @@ const webEnv = [
   `NEXT_PUBLIC_LENS_ADDRESS=${dep.CerminLens}`,
   `NEXT_PUBLIC_DEMO_VAULT=${demoVault}`,
   `NEXT_PUBLIC_DEPLOY_BLOCK=${dep.deployBlock}`,
+  `NEXT_PUBLIC_MIN_DEBT=${dep.minDebt}`,
   ...(site ? [`NEXT_PUBLIC_SITE_URL=${site.replace(/\/$/, '')}`] : []),
   ...(local ? [`NEXT_PUBLIC_BSC_RPC_URL=${RPC}`] : []),
   '',

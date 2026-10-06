@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useLang } from "@/lib/i18n";
 import { useLedger, type LedgerEntry } from "@/hooks/useSaku";
 import { STATUS_TEXT, statusName } from "@/lib/saku";
@@ -98,16 +99,50 @@ function Row({ e }: { e: LedgerEntry }) {
 }
 
 /** The passbook: every payment, hold, defend and skim, newest first, from event logs. */
-export function Ledger({ vault, limit = 30 }: { vault: `0x${string}` | undefined; limit?: number }) {
+const KEY_KINDS: LedgerEntry["kind"][] = ["held", "defended", "created", "cancelled"];
+
+export function Ledger({
+  vault,
+  limit = 30,
+  keyFirst = false,
+}: {
+  vault: `0x${string}` | undefined;
+  limit?: number;
+  /** Open on the moments that matter (holds, defends, schedule changes) with a switch to everything. */
+  keyFirst?: boolean;
+}) {
   const { t } = useLang();
-  const { data, isLoading, isError, refetch } = useLedger(vault);
+  const [all, setAll] = useState(false);
+  const [onlyKey, setOnlyKey] = useState(keyFirst);
+  const { data: raw, isLoading, isError, refetch } = useLedger(vault);
+  const data = raw && onlyKey ? raw.filter((e) => KEY_KINDS.includes(e.kind)) : raw;
   return (
-    <section aria-labelledby="ledger-title" className="rounded-2xl border border-line bg-surface p-5 sm:p-7">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 id="ledger-title" className="text-xl text-ink">
-          {t("Buku catatan on-chain", "On-chain passbook")}
+    <section aria-labelledby="ledger-title" className="rounded-3xl border border-cream-300 bg-surface shadow-soft p-6 sm:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="ledger-title" className="font-serif text-2xl font-medium tracking-[-0.02em] text-ink">
+          {t("Buku ", "The ")}
+          <em className="italic font-normal text-amber-600">{t("catatan", "passbook")}</em>
         </h2>
-        <span className="text-xs text-muted">{t("dari event log, tanpa indexer", "from event logs, no indexer")}</span>
+        {keyFirst && raw ? (
+          <div className="inline-flex items-center gap-1 rounded-full border border-cream-300 bg-surface-soft p-0.5 text-xs font-medium">
+            {[
+              { on: true, label: t("Peristiwa penting", "Key moments") },
+              { on: false, label: t(`Semua (${raw.length})`, `All (${raw.length})`) },
+            ].map((o) => (
+              <button
+                key={String(o.on)}
+                type="button"
+                onClick={() => setOnlyKey(o.on)}
+                aria-pressed={onlyKey === o.on}
+                className={`h-7 rounded-full px-3 transition-colors ${onlyKey === o.on ? "bg-ink text-cream-50" : "text-muted hover:text-ink"}`}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <span className="text-xs text-muted">{t("dari event log, tanpa indexer", "from event logs, no indexer")}</span>
+        )}
       </div>
       {isLoading && <p className="mt-4 text-sm text-muted">{t("Membaca event dari BNB Chain…", "Reading events from BNB Chain…")}</p>}
       {isError && (
@@ -123,10 +158,15 @@ export function Ledger({ vault, limit = 30 }: { vault: `0x${string}` | undefined
       )}
       {data && data.length > 0 && (
         <ol className="mt-3">
-          {data.slice(0, limit).map((e) => (
+          {data.slice(0, all ? data.length : limit).map((e) => (
             <Row key={`${e.txHash}-${e.logIndex}`} e={e} />
           ))}
         </ol>
+      )}
+      {data && data.length > limit && (
+        <button type="button" onClick={() => setAll(!all)} className="mt-3 text-sm font-medium text-amber-600 hover:text-amber-700">
+          {all ? t("Ringkas", "Show less") : t(`Tampilkan semua (${data.length})`, `Show all (${data.length})`)}
+        </button>
       )}
     </section>
   );

@@ -70,7 +70,7 @@ function ScheduleCard({
   const secsToNext = Number(s.nextDueAt) - now;
 
   return (
-    <article className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5 sm:flex-row sm:items-center">
+    <article className="flex flex-col gap-4 rounded-3xl border border-cream-300 bg-surface shadow-soft p-5 sm:flex-row sm:items-center">
       <Envelope state={envState} className="w-24 shrink-0 sm:w-28" />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">

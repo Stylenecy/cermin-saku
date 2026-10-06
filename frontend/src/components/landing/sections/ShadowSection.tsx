@@ -69,7 +69,7 @@ export function ShadowSection() {
                   value={500000}
                   durationMs={1400}
                   format={(n) => "Rp " + Math.round(n).toLocaleString("id-ID")}
-                  className="block text-5xl font-semibold tabular-nums tracking-tight text-ink"
+                  className="block text-4xl sm:text-5xl whitespace-nowrap font-semibold tabular-nums tracking-tight text-ink"
                 />
                 <div className="text-sm text-muted mt-1">{t("tiap bulan · ke dompet anak", "every month · to the child's wallet")}</div>
                 <div className="grid grid-cols-3 gap-2 mt-6">

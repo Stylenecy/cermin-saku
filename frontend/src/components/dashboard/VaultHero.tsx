@@ -57,7 +57,7 @@ export function VaultHero({
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-[0.38]"
-          style={{ backgroundImage: "url(/shadow-night-warmth.webp)" }}
+          style={{ backgroundImage: "url(/saku-shadow-night-warmth.webp)" }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-shadow-900 via-shadow-900/88 to-shadow-900/55" />
       </div>
@@ -97,7 +97,7 @@ export function VaultHero({
           </div>
 
           <p className="text-[11px] uppercase tracking-[0.18em] text-amber-300/80 font-mono mb-2">
-            {t("Shadow · yang kamu pakai sehari-hari", "The Shadow · what you live on")}
+            {t("Saldo pakai · sumber uang saku", "Spendable · where allowances come from")}
           </p>
           <AnimatedNumber
             key={rate}
@@ -111,7 +111,7 @@ export function VaultHero({
               (≈ {spendableUsd.toLocaleString("en-US", { maximumFractionDigits: 2 })} MUSD)
             </span>{" "}
             ·{" "}
-            {t("bayangan dari", "cast from")}{" "}
+            {t("dipinjam dari", "borrowed against")}{" "}
             <span className="text-cream-100 tabular-nums">{btcAmount.toFixed(4)} BNB</span>{" "}
             {t("yang tetap utuh", "held whole")}
           </p>

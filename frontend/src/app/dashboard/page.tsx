@@ -26,6 +26,8 @@ import { LineShadowText } from "@/components/ui/LineShadowText";
 import { motion } from "framer-motion";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { useFeedPrice, useVaultSchedules } from "@/hooks/useSaku";
+import { ScheduleCards } from "@/components/saku/ScheduleCards";
 
 const TESTNET_PRICE_FALLBACK = 95_000;
 
@@ -96,8 +98,8 @@ function NoPositionState() {
         </h2>
         <p className="text-muted text-sm mt-3 max-w-md mx-auto leading-relaxed">
           {t(
-            "Setor BNB sekali, lalu Cermin membuka vault di BNB Chain yang memberimu uang saku dalam dolar (MUSD), tanpa pernah menjual BNB-mu.",
-            "Deposit BNB once and Cermin opens a vault on BNB Chain that pays you a dollar allowance — without ever selling your BNB.",
+            "Setor BNB sekali untuk membuka vault-mu di BNB Chain. Dari situ kamu bisa menjadwalkan uang saku untuk anakmu, tanpa pernah menjual BNB.",
+            "Deposit BNB once to open your vault on BNB Chain. From there you can schedule your child's allowance, without ever selling your BNB.",
           )}
         </p>
         <div className="mt-8 flex justify-center">
@@ -148,6 +150,8 @@ export default function DashboardPage() {
     approveHash,
   } = useVaultActions(vaultAddress);
   const savings = useSavings();
+  const { price: feedPrice } = useFeedPrice();
+  const schedules = useVaultSchedules(hasVault ? vaultAddress : undefined);
   const savingsActions = useSavingsActions();
   const { t } = useLang();
 
@@ -214,7 +218,7 @@ export default function DashboardPage() {
           </div>
           <h1 className="font-serif text-[2rem] md:text-[2.5rem] font-medium tracking-[-0.02em] text-ink leading-tight">
             {t("", "Your ")}
-            <LineShadowText as="span" shadowColor="#1E4A8F" className="text-ink">
+            <LineShadowText as="span" shadowColor="#35648F" className="italic font-normal text-ink">
               Vault
             </LineShadowText>
             {t("-mu", "")}
@@ -226,8 +230,8 @@ export default function DashboardPage() {
                   "Your vault dipped below its defense line — hit Defend below to recover.",
                 )
               : t(
-                  "BNB-mu tetap utuh dan aman. Cermin memanen saat BNB naik (skim), membela posisi saat BNB turun, dan memutar dolar yang menganggur di tabungan. Semuanya otomatis.",
-                  "Your BNB is locked and safe. Cermin skims the peaks, defends the dips, and earns on idle dollars — automatically.",
+                  "BNB-mu tetap utuh. Uang saku dibayar dari saldo pakai sesuai jadwal; kalau BNB turun terlalu dalam, pembayaran ditahan dan penjaga membela posisimu lebih dulu.",
+                  "Your BNB stays whole. Allowances are paid from the spendable balance on schedule; if BNB falls too far, payments are held and the guard defends your position first.",
                 )}
           </p>
         </motion.div>
@@ -283,6 +287,27 @@ export default function DashboardPage() {
           defensePrice={defensePrice}
         />
       </motion.div>
+
+      <motion.section variants={fadeUp} className="mb-8">
+        <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
+          <h2 className="font-serif text-2xl md:text-[1.75rem] font-medium tracking-[-0.02em] text-ink">
+            {t("Uang saku ", "Scheduled ")}
+            <em className="italic font-normal text-amber-600">{t("terjadwal", "allowances")}</em>
+          </h2>
+          <Link href="/saku" className={buttonClasses({ variant: "secondary", size: "sm" })}>
+            {t("Atur uang saku", "Manage allowances")}
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+        <ScheduleCards
+          schedules={schedules.data}
+          vault={vaultAddress}
+          livePrice={feedPrice}
+          ownerView
+          isLoading={schedules.isLoading}
+          isError={schedules.isError}
+        />
+      </motion.section>
 
       <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <motion.div

@@ -70,7 +70,7 @@ export function LensPanel({
 
   if (!vault || !livePrice) {
     return (
-      <div className="rounded-2xl border border-line bg-surface p-6 text-sm text-muted">
+      <div className="rounded-3xl border border-cream-300 bg-surface shadow-soft p-6 text-sm text-muted">
         {t("Lens butuh vault dan harga feed. Belum ada data.", "Lens needs a vault and a feed price. No data yet.")}
       </div>
     );
@@ -103,7 +103,7 @@ export function LensPanel({
   return (
     <section
       aria-labelledby="lens-title"
-      className={cn("rounded-2xl border border-line bg-surface", compact ? "p-5" : "p-6 sm:p-8")}
+      className={cn("rounded-3xl border border-cream-300 bg-surface shadow-soft", compact ? "p-5" : "p-6 sm:p-8")}
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="lens-title" className="text-xl sm:text-2xl text-ink">

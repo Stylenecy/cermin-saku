@@ -23,7 +23,7 @@ export function EnvelopeTimeline() {
   const path = PRICE.map((p, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(p).toFixed(1)}`).join(" ");
 
   return (
-    <figure className="rounded-2xl border border-line bg-surface p-4 sm:p-6">
+    <figure className="rounded-3xl border border-cream-300 bg-surface shadow-soft p-4 sm:p-6">
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full" role="img" aria-label={t("Ilustrasi: harga BNB turun di bawah garis saku, dua amplop ditahan, lalu dibayar setelah pulih", "Illustration: BNB price dips under the Saku line, two envelopes are held, then paid after recovery")}>
         <line x1="20" x2={w - 10} y1={y(SAKU_LINE)} y2={y(SAKU_LINE)} className="stroke-tinta" strokeWidth="1.5" strokeDasharray="6 5" />
         <text x={w - 12} y={y(SAKU_LINE) - 6} textAnchor="end" className="fill-tinta text-[11px] font-semibold">

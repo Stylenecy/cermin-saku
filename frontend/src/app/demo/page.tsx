@@ -3,109 +3,130 @@
 export const dynamic = "force-dynamic";
 
 import { zeroAddress } from "viem";
+import { motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 import { SAKU, sakuDeployed } from "@/lib/saku";
-import { EXPLORER_URL } from "@/lib/chains";
+import { fadeUp, staggerContainer } from "@/lib/motion";
 import { useFeedPrice, useLensSnapshot, useVaultSchedules } from "@/hooks/useSaku";
 import { SakuNav, SakuFooter } from "@/components/saku/SakuNav";
 import { LensPanel } from "@/components/saku/LensPanel";
 import { Ledger } from "@/components/saku/Ledger";
 import { ScheduleCards } from "@/components/saku/ScheduleCards";
 import { ContractList } from "@/components/saku/ContractList";
-import { Rp, RpPrice, RateNote } from "@/components/saku/Money";
-import { truncateAddress } from "@/lib/utils";
-import { formatBps, formatNum } from "@/lib/idr";
+import { RateNote } from "@/components/saku/Money";
+import { VaultHero } from "@/components/dashboard/VaultHero";
+import { LineShadowText } from "@/components/ui/LineShadowText";
 
-function Stat({ label, children, note }: { label: string; children: React.ReactNode; note?: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border border-line bg-surface px-4 py-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">{label}</p>
-      <p className="mt-1 text-lg font-bold text-ink">{children}</p>
-      {note && <p className="mt-0.5 text-xs text-muted">{note}</p>}
-    </div>
-  );
-}
-
-export default function BuktiPage() {
-  const { t, lang } = useLang();
+/** The app, read-only, on our public demo vault: no wallet needed. */
+export default function DemoPage() {
+  const { t } = useLang();
   const vault = SAKU.DEMO_VAULT !== zeroAddress ? SAKU.DEMO_VAULT : undefined;
-  const { price, isError: priceError } = useFeedPrice();
+  const { price } = useFeedPrice();
   const snap = useLensSnapshot(vault, price);
   const schedules = useVaultSchedules(vault);
   const s = snap.data;
   const next = schedules.data?.find((x) => !x.cancelled && x.paid < x.periods);
+  const priceUsd = price ? Number(price) / 1e18 : 0;
+  const safe = s ? Number(s.icrBps) >= s.sakuFloorICR : true;
 
   return (
     <div className="min-h-screen">
-      <SakuNav />
-      <main className="mx-auto max-w-6xl px-4 pb-10 pt-10 sm:px-6">
-        <p className="text-sm font-semibold uppercase tracking-[0.1em] text-tinta">{t("Bukti on-chain", "On-chain proof")}</p>
-        <h1 className="mt-2 max-w-3xl text-3xl leading-tight text-ink sm:text-5xl">
-          {t("Satu vault sungguhan, dibaca langsung dari BNB Chain", "One real vault, read straight from BNB Chain")}
-        </h1>
-        <p className="mt-4 max-w-2xl text-pretty leading-relaxed text-muted">
-          {t(
-            "Halaman ini tidak butuh dompet. Semua angka dibaca dari kontrak lewat RPC publik: vault demo milik deployer kami, jadwal uang sakunya, dan setiap pembayaran atau penahanan yang tercatat sebagai event.",
-            "No wallet needed. Every number is read from the contracts over a public RPC: our deployer's demo vault, its allowance schedules, and every payment or hold recorded as an event.",
-          )}
-        </p>
-
-        {!sakuDeployed() || !vault ? (
-          <div className="mt-10 rounded-2xl border border-dashed border-kunyit bg-kunyit-soft p-6 text-sm text-ink">
-            {t(
-              "Kontrak Cermin Saku belum dideploy ke jaringan ini (alamat belum diisi). Begitu deploy BSC testnet selesai, halaman ini terisi otomatis.",
-              "Cermin Saku contracts are not deployed on this network yet (addresses not set). Once the BSC testnet deploy is done, this page fills in automatically.",
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <Stat label={t("Harga BNB (simulasi)", "BNB price (simulated)")} note={price ? `$${formatNum(Number(price) / 1e18, lang, 2)}` : priceError ? t("feed tidak terjangkau", "feed unreachable") : "…"}>
-                <RpPrice price={price} />
-              </Stat>
-              <Stat label={t("Jaminan", "Collateral")} note={t("tidak pernah dijual", "never sold")}>
-                {s ? `${formatNum(Number(s.collateral) / 1e18, lang, 2)} BNB` : "…"}
-              </Stat>
-              <Stat label="ICR" note={s ? `${t("Saku berhenti di bawah", "Saku pauses below")} ${s.sakuFloorICR / 100}%` : undefined}>
-                {s ? formatBps(s.icrBps, lang, 1) : "…"}
-              </Stat>
-              <Stat label={t("Saldo pakai", "Spendable")} note={s ? <>{t("tabungan", "savings")} <Rp wei={s.savings} showUsd={false} /></> : undefined}>
-                <Rp wei={s?.spendable} showUsd={false} />
-              </Stat>
-            </div>
-            <p className="mt-3 text-xs text-muted">
-              {t("Vault demo", "Demo vault")}:{" "}
-              <a className="font-mono text-tinta hover:underline" href={`${EXPLORER_URL}/address/${vault}`} target="_blank" rel="noreferrer">
-                {truncateAddress(vault)}
-              </a>
-            </p>
-
-            <h2 className="mt-12 text-2xl text-ink">{t("Amplop yang dijadwalkan", "Scheduled envelopes")}</h2>
-            <div className="mt-4">
-              <ScheduleCards
-                schedules={schedules.data}
-                vault={vault}
-                livePrice={price}
-                ownerView={false}
-                isLoading={schedules.isLoading}
-                isError={schedules.isError}
-              />
-            </div>
-
-            <div className="mt-10">
-              <LensPanel vault={vault} livePrice={price} sakuAmount={next?.amount ?? schedules.data?.[0]?.amount ?? 0n} sakuPending={!!next} />
-            </div>
-            <div className="mt-10">
-              <Ledger vault={vault} />
-            </div>
-          </>
-        )}
-
-        <div className="mt-10">
-          <ContractList />
+      <SakuNav demo />
+      <div className="relative">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[440px] overflow-hidden">
+          <div className="absolute -top-28 left-1/2 -translate-x-1/2 w-[52rem] h-[30rem] rounded-full bg-amber-200/25 blur-[120px]" />
         </div>
-        <RateNote className="mt-6" />
-      </main>
+        <motion.main
+          variants={staggerContainer(0.08, 0.05)}
+          initial="hidden"
+          animate="show"
+          className="relative mx-auto max-w-6xl px-6 py-10"
+        >
+          <motion.div variants={fadeUp} className="mb-7">
+            <div className="inline-flex items-center gap-2.5 rounded-full border border-cream-300 bg-surface/70 backdrop-blur px-3 py-1.5 mb-3">
+              <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${safe ? "bg-success" : "bg-warning"}`} />
+              <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink">
+                {t("Vault demo · BNB Chain testnet", "Demo vault · BNB Chain testnet")}
+              </span>
+            </div>
+            <h1 className="font-serif text-[2rem] md:text-[2.5rem] font-medium tracking-[-0.02em] text-ink leading-tight">
+              {t("Lihat ", "See ")}
+              <LineShadowText as="span" shadowColor="#35648F" className="italic font-normal text-ink">
+                {t("Cermin Saku", "Cermin Saku")}
+              </LineShadowText>{" "}
+              {t("bekerja", "at work")}
+            </h1>
+            <p className="text-muted mt-2.5 text-pretty max-w-xl leading-relaxed">
+              {t(
+                "Ini vault sungguhan di testnet, dibaca langsung dari kontrak tanpa dompet. Lihat jadwal uang sakunya, setiap pembayaran dan penahanan, lalu geser harga BNB untuk melihat apa yang akan dilakukan kontrak.",
+                "A real vault on testnet, read straight from the contracts without a wallet. See its allowance schedule, every payment and hold, then slide the BNB price to see what the contract would do.",
+              )}
+            </p>
+          </motion.div>
+
+          {!sakuDeployed() || !vault ? (
+            <div className="rounded-3xl border border-dashed border-amber-200 bg-amber-50 p-6 text-sm text-ink">
+              {t("Kontrak belum dideploy di jaringan ini.", "Contracts are not deployed on this network yet.")}
+            </div>
+          ) : (
+            <>
+              {s && (
+                <motion.div variants={fadeUp} className="mb-4">
+                  <VaultHero
+                    vaultAddress={vault}
+                    collateral={s.collateral}
+                    debt={s.debt}
+                    spendable={s.spendable}
+                    icr={s.icrBps}
+                    btcPriceUsd={priceUsd}
+                    defendICR={s.defendICR}
+                  />
+                </motion.div>
+              )}
+
+              <motion.section variants={fadeUp} className="mt-10">
+                <h2 className="font-serif text-2xl md:text-[1.75rem] font-medium tracking-[-0.02em] text-ink mb-4">
+                  {t("Amplop ", "Scheduled ")}
+                  <em className="italic font-normal text-amber-600">{t("terjadwal", "envelopes")}</em>
+                </h2>
+                <ScheduleCards
+                  schedules={schedules.data}
+                  vault={vault}
+                  livePrice={price}
+                  ownerView={false}
+                  isLoading={schedules.isLoading}
+                  isError={schedules.isError}
+                />
+              </motion.section>
+
+              <motion.div variants={fadeUp} className="mt-10">
+                <LensPanel
+                  vault={vault}
+                  livePrice={price}
+                  sakuAmount={next?.amount ?? schedules.data?.[0]?.amount ?? 0n}
+                  sakuPending={!!next}
+                />
+              </motion.div>
+
+              <motion.div variants={fadeUp} className="mt-10">
+                <Ledger vault={vault} limit={8} keyFirst />
+              </motion.div>
+
+              <details className="group mt-10 rounded-3xl border border-cream-300 bg-surface/60 px-6 py-4">
+                <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-ink">
+                  {t("Detail teknis: alamat kontrak", "Technical details: contract addresses")}
+                  <ChevronDown className="w-4 h-4 text-muted transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="mt-4">
+                  <ContractList />
+                </div>
+              </details>
+              <RateNote className="mt-6" />
+            </>
+          )}
+        </motion.main>
+      </div>
       <SakuFooter />
     </div>
   );

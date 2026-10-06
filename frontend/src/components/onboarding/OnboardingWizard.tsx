@@ -2,9 +2,9 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useWriteContract, useWaitForTransactionReceipt, useAccount, useBalance } from "wagmi";
 import { useRouter } from "next/navigation";
-import { parseEther, zeroAddress } from "viem";
+import { formatEther, parseEther, zeroAddress } from "viem";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -17,7 +17,7 @@ import { PRESETS, GOAL_LABELS, RISK_LABELS, type RiskKey, type GoalLabel } from 
 import { simulate } from "@/lib/simulation";
 import { CONTRACTS, CERMIN_FACTORY_ABI } from "@/lib/contracts";
 import { formatUsd, formatTxError } from "@/lib/utils";
-import { formatIdr, useUsdIdr } from "@/lib/idr";
+import { formatIdr, formatNum, useUsdIdr } from "@/lib/idr";
 import { useLang } from "@/lib/i18n";
 import { EXPLORER_URL, activeChain } from "@/lib/chains";
 import {
@@ -46,11 +46,14 @@ const stepVariants = {
   exit: (dir: number) => ({ x: dir > 0 ? -44 : 44, opacity: 0 }),
 };
 
-// The CDP enforces a 2,000 MUSD minimum debt (1,800 + 200 gas). The borrow at open
-// is collateralValue * targetLTV, so a small deposit / low LTV reverts with
-// MinDebtNotMet(). Check it client-side against the live BNB price so the wizard
-// never lets a user sign a transaction that is doomed to revert on-chain.
-const MIN_MUSD_DEBT = 2_000;
+// The vault reverts with MinDebtNotMet() when the borrow at open
+// (collateralValue * targetLTV) is under MIN_DEBT. MIN_DEBT is a deploy-time
+// setting (Mezo: 2,000 MUSD; our BSC testnet deployment: 20), so it comes from
+// the deployment via NEXT_PUBLIC_MIN_DEBT (wei). Checked client-side against the
+// live price so the wizard never lets a user sign a transaction doomed to revert.
+const MIN_MUSD_DEBT = Number(BigInt(process.env.NEXT_PUBLIC_MIN_DEBT || "20000000000000000000") / 10n ** 16n) / 100;
+// Kept back from the wallet balance for the open transaction's gas.
+const GAS_BUFFER_BNB = 0.002;
 
 function minDebtCheck(btcAmount: string, btcPriceUsd: number, targetLTV: number) {
   const btc = parseFloat(btcAmount || "0");
@@ -110,8 +113,11 @@ function StepDeposit({
   onChange: (patch: Partial<WizardState>) => void;
   onNext: () => void;
 }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const { rate } = useUsdIdr();
+  const { address } = useAccount();
+  const { data: bal } = useBalance({ address, query: { enabled: !!address, refetchInterval: 15_000 } });
+  const balanceBnb = bal ? Number(formatEther(bal.value)) : undefined;
   const usdValue = parseFloat(state.btcAmount || "0") * state.btcPriceUsd;
   const priceReady = state.btcPriceUsd > 0;
   // The lowest possible minimum is the highest-LTV preset (Aggressive). Require
@@ -120,12 +126,12 @@ function StepDeposit({
   const floor = minDebtCheck(state.btcAmount, state.btcPriceUsd, maxLtv);
   const balancedMin = minDebtCheck("0", state.btcPriceUsd, PRESETS.balanced.targetLTV).minBtc;
   const conservativeMin = minDebtCheck("0", state.btcPriceUsd, PRESETS.conservative.targetLTV).minBtc;
-  const amountEntered = parseFloat(state.btcAmount || "0") > 0;
-  const valid = amountEntered && (!priceReady || floor.meets);
-  const presets = ["0.07", "0.10", "0.25", "0.50"];
+  const amount = parseFloat(state.btcAmount || "0");
+  const amountEntered = amount > 0;
+  const affordable = balanceBnb === undefined || amount + GAS_BUFFER_BNB <= balanceBnb;
+  const valid = amountEntered && (!priceReady || floor.meets) && affordable;
+  const presets = ["0.05", "0.10", "0.25", "0.50"];
   const priceRp = formatIdr(state.btcPriceUsd * rate);
-  const priceUsd = formatUsd(state.btcPriceUsd, 0);
-  const minDebtRp = formatIdr(MIN_MUSD_DEBT * rate);
 
   return (
     <div className="space-y-7">
@@ -187,30 +193,36 @@ function StepDeposit({
         ))}
       </div>
 
-      {amountEntered && priceReady && !floor.meets && (
-        <p className="text-xs text-amber-700 -mt-3">
-          {t("Terlalu kecil untuk membuka vault. Setor minimal", "Too small to open any vault — deposit at least")}{" "}
-          <span className="font-medium">{floor.minBtc.toFixed(4)} BNB</span>.
+      <div className="flex items-center justify-between rounded-2xl border border-cream-300 bg-surface px-4 py-3 text-sm -mt-2">
+        <span className="text-muted">{t("Saldo dompetmu", "Your wallet balance")}</span>
+        <span className="font-medium tabular-nums text-ink">
+          {balanceBnb === undefined ? "…" : `${formatNum(balanceBnb, lang, 4)} tBNB`}
+        </span>
+      </div>
+
+      {amountEntered && !affordable && (
+        <p className="text-sm text-danger -mt-3">
+          {t("Saldo belum cukup untuk setoran ini plus biaya gas. ", "Not enough balance for this deposit plus gas. ")}
+          <a href="https://www.bnbchain.org/en/testnet-faucet" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+            {t("Ambil tBNB gratis di faucet ↗", "Get free tBNB from the faucet ↗")}
+          </a>
+        </p>
+      )}
+      {amountEntered && affordable && priceReady && !floor.meets && (
+        <p className="text-sm text-amber-700 -mt-3">
+          {t("Terlalu kecil untuk membuka vault. Minimal", "Too small to open a vault. At least")}{" "}
+          <span className="font-medium">{formatNum(floor.minBtc, lang, 4)} BNB</span>.
         </p>
       )}
 
-      <Card variant="soft" className="!p-4">
-        {priceReady ? (
-          <p className="text-xs text-muted leading-relaxed">
-            <span className="font-medium text-ink">
-              {t("Minimal", "Minimum")} {floor.minBtc.toFixed(4)} BNB
-            </span>{" "}
-            {t(
-              `untuk membuka vault di harga ${priceRp}/BNB (${priceUsd}, harga simulasi). Strategi yang lebih aman butuh lebih banyak: ${RISK_LABELS.balanced.id} ≥ ${balancedMin.toFixed(4)} BNB, ${RISK_LABELS.conservative.id} ≥ ${conservativeMin.toFixed(4)} BNB. CDP mewajibkan pinjaman minimal 2.000 MUSD (≈ ${minDebtRp}).`,
-              `to open a vault at ${priceRp}/BNB (${priceUsd}, simulated price). Safer strategies need more: ${RISK_LABELS.balanced.en} ≥ ${balancedMin.toFixed(4)} BNB, ${RISK_LABELS.conservative.en} ≥ ${conservativeMin.toFixed(4)} BNB. The CDP enforces a 2,000 MUSD minimum loan (≈ ${minDebtRp}).`,
-            )}
-          </p>
-        ) : (
-          <p className="text-xs text-muted leading-relaxed">
-            {t("Mengambil harga BNB simulasi…", "Fetching the simulated BNB price…")}
-          </p>
-        )}
-      </Card>
+      <p className="text-xs text-muted-2 -mt-2">
+        {priceReady
+          ? t(
+              `Profil ${RISK_LABELS.balanced.id} mulai dari ${formatNum(balancedMin, lang, 3)} BNB · ${RISK_LABELS.conservative.id} ${formatNum(conservativeMin, lang, 3)} BNB · 1 BNB = ${priceRp} (testnet)`,
+              `${RISK_LABELS.balanced.en} starts at ${formatNum(balancedMin, lang, 3)} BNB · ${RISK_LABELS.conservative.en} ${formatNum(conservativeMin, lang, 3)} BNB · 1 BNB = ${priceRp} (testnet)`,
+            )
+          : t("Mengambil harga BNB…", "Fetching the BNB price…")}
+      </p>
 
       <Button variant="primary" size="xl" className="w-full" onClick={onNext} disabled={!valid}>
         {t("Lanjut", "Continue")}

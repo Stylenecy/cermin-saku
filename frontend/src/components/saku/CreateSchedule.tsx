@@ -71,7 +71,7 @@ export function CreateSchedule({
 
   return (
     <form
-      className="rounded-2xl border border-line bg-surface p-5 sm:p-7"
+      className="rounded-3xl border border-cream-300 bg-surface shadow-soft p-5 sm:p-7"
       onSubmit={(e) => {
         e.preventDefault();
         if (errors.length) return;

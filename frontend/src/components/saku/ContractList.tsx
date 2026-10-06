@@ -16,7 +16,7 @@ export function ContractList() {
     ["MockMUSD", t("stablecoin tiruan CDP", "mock CDP stablecoin"), CONTRACTS.MUSD],
   ];
   return (
-    <section aria-labelledby="contracts-title" className="rounded-2xl border border-line bg-surface p-5 sm:p-7">
+    <section aria-labelledby="contracts-title" className="rounded-3xl border border-cream-300 bg-surface shadow-soft p-5 sm:p-7">
       <h2 id="contracts-title" className="text-xl text-ink">
         {t("Kontrak", "Contracts")} · {activeChain.name}
       </h2>
