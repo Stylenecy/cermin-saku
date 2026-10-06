@@ -38,6 +38,7 @@ else, with one rule enforced by the contract, not by the app: *survival money co
 | BNB collateral never decreases | `invariant_CollateralNeverDecreases` | same |
 | Lens = real execution | fuzz `testFuzz_PreviewDefendEqualsDefend`, `testFuzz_PreviewSkimEqualsSkim`, `testFuzz_PausePriceIsExactBoundary` | [`CerminLens.t.sol`](contracts/test/saku/CerminLens.t.sol) |
 | Keeper logic tested | **18 node:test passing** (12 original + 6 Saku) | `cd agent && npm test` |
+| **Full flow on BSC testnet** | keeper paid #1 and #2 → price to $560 → `AllowanceHeld` (IcrBelowFloor, ICR 143.40%, no MUSD moved) → keeper `Defended` (133% → 140%) → price to $800 → owed #3 and #4 paid; collateral stayed 0.07 BNB | [`docs/TESTNET-DEPLOY.md`](docs/TESTNET-DEPLOY.md#demo-run-keeper-live) (every tx linked) |
 | Full flow rehearsed on a local chain | open → pay ×2 → price drop → `AllowanceHeld(IcrBelowFloor)` → keeper `defend()` → recovery → paid again | [`docs/LOCAL-REHEARSAL.md`](docs/LOCAL-REHEARSAL.md) |
 | BSC testnet deployment from our own wallet | CerminSaku [`0x8603B62b82166D68A9f76d2753bD8a15066Cb6Df`](https://testnet.bscscan.com/address/0x8603B62b82166D68A9f76d2753bD8a15066Cb6Df) and 8 more, source on Sourcify | [Contracts](#contracts) |
 | CI | GitHub Actions: forge build + test, keeper typecheck + test, web typecheck + lint + build | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) |
