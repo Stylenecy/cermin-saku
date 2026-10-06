@@ -11,7 +11,7 @@ when the position is not safe, and pays it once it is. BNB is never sold.
 Built on **Cermin** by Kiel (MIT) · Indonesia Web3 Hackathon 2026 · BSC testnet
 
 <!-- PROOF-LINKS:START -->
-Live app: *pending* · Demo video: *pending* · On-chain proof page: *pending* · [Contracts on BscScan](#contracts)
+Live app: [cermin-saku.vercel.app](https://cermin-saku.vercel.app) · Demo video: *pending* · On-chain proof page: [/bukti](https://cermin-saku.vercel.app/bukti) · [Contracts on BscScan](#contracts)
 <!-- PROOF-LINKS:END -->
 
 </div>
