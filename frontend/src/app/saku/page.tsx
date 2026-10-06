@@ -54,8 +54,8 @@ export default function SakuPage() {
           <div className="mt-8 rounded-3xl border border-cream-300 bg-surface shadow-soft p-6 sm:p-8">
             <p className="max-w-xl leading-relaxed text-muted">
               {t(
-                "Hubungkan dompet pemilik vault untuk menjadwalkan uang saku. Mau lihat dulu tanpa dompet? Buka vault demo kami.",
-                "Connect the vault owner's wallet to schedule allowances. Want to look first without a wallet? Open our demo vault.",
+                "Masuk sebagai pemilik vault untuk menjadwalkan uang saku. Mau lihat dulu tanpa dompet? Buka vault demo kami.",
+                "Sign in as the vault owner to schedule allowances. Want to look first without a wallet? Open our demo vault.",
               )}
             </p>
             <Link href="/demo" className={`${buttonClasses({ variant: "secondary", size: "lg" })} mt-5`}>

@@ -48,7 +48,7 @@ export default function TerimaPage() {
         </h1>
         <p className="mt-2.5 max-w-2xl leading-relaxed text-muted">
           {t(
-            "Tempel alamat dompetmu (atau hubungkan dompet). Kamu akan melihat amplop yang dijadwalkan untukmu, yang sudah sampai, dan kalau ada yang ditahan, alasannya.",
+            "Tempel alamat dompetmu (atau masuk). Kamu akan melihat amplop yang dijadwalkan untukmu, yang sudah sampai, dan kalau ada yang ditahan, alasannya.",
             "Paste your wallet address (or connect). You'll see the envelopes scheduled for you, the ones that arrived, and if one was held, why.",
           )}
         </p>
