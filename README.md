@@ -152,8 +152,14 @@ allowance, run the keeper, move the simulated price and watch payments get held 
 
 **Web**
 ```bash
-cd frontend && npm ci && cp .env.example .env.local   # fill NEXT_PUBLIC_* from the deploy JSON
-npm run dev
+cd frontend && npm ci
+npm run dev   # testnet addresses come from frontend/.env.production, written by scripts/post-deploy.mjs
+```
+
+**Deploy (BSC testnet, one command)**
+```bash
+bash scripts/deploy-testnet.sh   # keys from ./wallets.env (gitignored): deploy, Sourcify, demo vault, wire web + keeper + README
+bash scripts/rehearse-fork.sh    # same script against a local anvil fork of BSC testnet, no tBNB spent
 ```
 
 **Keeper**

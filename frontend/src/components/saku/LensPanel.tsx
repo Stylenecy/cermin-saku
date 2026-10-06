@@ -88,6 +88,14 @@ export function LensPanel({
     const v = Number(((p - minP) * 10_000n) / (maxP - minP)) / 100;
     return Math.min(100, Math.max(0, v));
   };
+  const bands = lines
+    ? [
+        { key: "liq", from: 0, to: pos(lines.liquidationPrice), cls: "bg-stempel/70" },
+        { key: "def", from: pos(lines.liquidationPrice), to: pos(lines.defendPrice), cls: "bg-kunyit/60" },
+        { key: "held", from: pos(lines.defendPrice), to: pos(lines.sakuPausePrice), cls: "bg-stempel/25" },
+        { key: "safe", from: pos(lines.sakuPausePrice), to: 100, cls: "bg-daun/45" },
+      ]
+    : [];
 
   return (
     <section
@@ -118,19 +126,31 @@ export function LensPanel({
         className="mt-5 w-full accent-[#1e4a8f] h-2 cursor-pointer"
       />
 
-      {/* price axis with the vault's own lines */}
-      <div className="relative mt-2 h-14" aria-hidden>
+      {/* zones and the vault's own price lines, read from CerminLens */}
+      <div className="relative mt-2 h-1.5 overflow-hidden rounded-full bg-line" aria-hidden>
+        {bands.map((b) => (
+          <span key={b.key} className={cn("absolute inset-y-0", b.cls)} style={{ left: `${b.from}%`, width: `${Math.max(0, b.to - b.from)}%` }} />
+        ))}
+      </div>
+      {/* The lines can sit a few pixels apart, so the axis carries ticks only
+          and the names and prices go in a legend that wraps on small screens. */}
+      <div className="relative h-9" aria-hidden>
         {markers.map((m) => (
-          <div key={m.key} className="absolute top-0 flex -translate-x-1/2 flex-col items-center" style={{ left: `${pos(m.p)}%` }}>
-            <span className={cn("h-3 w-0.5", m.cls)} />
-            <span className="mt-1 whitespace-nowrap text-[10px] sm:text-[11px] text-muted">{m.label}</span>
-          </div>
+          <span key={m.key} className={cn("absolute top-0 h-3 w-0.5 -translate-x-1/2", m.cls)} style={{ left: `${pos(m.p)}%` }} />
         ))}
         <div className="absolute top-0 flex -translate-x-1/2 flex-col items-center" style={{ left: `${pos(livePrice)}%` }}>
-          <span className="h-3 w-0.5 bg-ink" />
-          <span className="mt-6 whitespace-nowrap text-[10px] sm:text-[11px] font-semibold text-ink">{t("sekarang", "now")}</span>
+          <span className="h-4 w-0.5 bg-ink" />
+          <span className="whitespace-nowrap text-[11px] font-semibold text-ink">{t("sekarang", "now")}</span>
         </div>
       </div>
+      <ul className="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-muted">
+        {markers.map((m) => (
+          <li key={m.key} className="flex items-center gap-1.5">
+            <span className={cn("h-2.5 w-2.5 shrink-0 rounded-sm", m.cls)} aria-hidden />
+            {m.label} <span className="font-semibold text-ink tabular">{formatIdr(musdToIdr(m.p, rate))}</span>
+          </li>
+        ))}
+      </ul>
 
       {isError && (
         <p className="mt-3 text-sm text-stempel">

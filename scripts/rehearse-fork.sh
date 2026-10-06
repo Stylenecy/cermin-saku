@@ -21,4 +21,4 @@ cast rpc anvil_setBalance "$DEPLOYER_ADDRESS" 0x429D069189E0000 --rpc-url "$RPC"
 rm -f contracts/deployments/anvil-fork97.json
 BSC_TESTNET_RPC="$RPC" DEPLOY_OUT_NAME=deployments/anvil-fork97.json SKIP_SOURCIFY=1 REHEARSAL=1 \
   bash scripts/deploy-testnet.sh
-echo "== rehearsal done. Keeper: cd agent && npx tsx src/index.ts · web: cd frontend && npm run dev"
+echo "== rehearsal done. Keeper: cd agent && npm run keeper · web: cd frontend && npm run dev"

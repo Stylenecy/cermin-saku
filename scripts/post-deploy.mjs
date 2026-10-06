@@ -138,6 +138,6 @@ console.log('README.md contracts table + proof links updated');
 console.log(`
 Next:
   1. git add frontend/.env.production README.md && git commit -m "chore: wire BSC testnet deployment"
-  2. Keeper: cd agent && npx tsx src/index.ts   (or leave it running during the demo recording)
+  2. Keeper: cd agent && npm run keeper   (reads agent/.env; keep it running during the demo recording)
   3. Vercel: root directory = frontend; no env vars needed (they come from .env.production)
   4. After Vercel/YouTube exist: node scripts/post-deploy.mjs --site <url> --video <url>`);

@@ -23,7 +23,7 @@ function useNow(intervalMs = 1000) {
 
 function countdown(sec: number, lang: "id" | "en") {
   if (sec <= 0) return lang === "id" ? "jatuh tempo" : "due now";
-  const u = lang === "id" ? { d: "h", h: "j", m: "m", s: "d" } : { d: "d", h: "h", m: "m", s: "s" };
+  const u = lang === "id" ? { d: " hari", h: " jam", m: " mnt", s: " dtk" } : { d: "d", h: "h", m: "m", s: "s" };
   const d = Math.floor(sec / 86_400);
   const h = Math.floor((sec % 86_400) / 3_600);
   const m = Math.floor((sec % 3_600) / 60);
