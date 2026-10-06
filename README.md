@@ -32,7 +32,7 @@ else, with one rule enforced by the contract, not by the app: *survival money co
 
 | What | Evidence | How to check |
 |---|---|---|
-| Contracts tested | **76 forge tests passing**: 33 original Cermin + 28 Saku unit/fuzz + 7 Lens + 8 invariant (64 runs × 64 calls each) | `cd contracts && forge test` |
+| Contracts tested | **76 forge tests passing**: 33 original Cermin + 28 Saku unit/fuzz + 7 Lens + 8 in the invariant suite (7 invariants + 1 positive control; 64 runs × 64 calls each) | `cd contracts && forge test` |
 | Payment never made while unsafe | invariant `invariant_NoUnsafePayment` + fuzz `testFuzz_NeverPaysBelowFloor` | [`test/saku/`](contracts/test/saku) |
 | Saku never moves more than granted | invariants `invariant_PaidNeverExceedsGranted`, `invariant_AllowanceAccounting` | same |
 | BNB collateral never decreases | `invariant_CollateralNeverDecreases` | same |
