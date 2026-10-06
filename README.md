@@ -38,9 +38,9 @@ else, with one rule enforced by the contract, not by the app: *survival money co
 | BNB collateral never decreases | `invariant_CollateralNeverDecreases` | same |
 | Lens = real execution | fuzz `testFuzz_PreviewDefendEqualsDefend`, `testFuzz_PreviewSkimEqualsSkim`, `testFuzz_PausePriceIsExactBoundary` | [`CerminLens.t.sol`](contracts/test/saku/CerminLens.t.sol) |
 | Keeper logic tested | **18 node:test passing** (12 original + 6 Saku) | `cd agent && npm test` |
-| **Full flow on BSC testnet** | keeper paid #1 and #2 → price to $560 → `AllowanceHeld` (IcrBelowFloor, ICR 143.40%, no MUSD moved) → keeper `Defended` (133% → 140%) → price to $800 → owed #3 and #4 paid; collateral stayed 0.07 BNB | [`docs/TESTNET-DEPLOY.md`](docs/TESTNET-DEPLOY.md#demo-run-keeper-live) (every tx linked) |
+| **Full flow on BSC testnet** | keeper paid #1 and #2 → price to $560 → `AllowanceHeld` (IcrBelowFloor, ICR 143.40%, no MUSD moved) → price to $520 → keeper `Defended` (133% → 140%) → price to $800 → owed #3 and #4 paid; collateral stayed 0.07 BNB | [`docs/TESTNET-DEPLOY.md`](docs/TESTNET-DEPLOY.md#demo-run-keeper-live) (every tx linked) |
 | Full flow rehearsed on a local chain | open → pay ×2 → price drop → `AllowanceHeld(IcrBelowFloor)` → keeper `defend()` → recovery → paid again | [`docs/LOCAL-REHEARSAL.md`](docs/LOCAL-REHEARSAL.md) |
-| BSC testnet deployment from our own wallet | CerminSaku [`0x8603B62b82166D68A9f76d2753bD8a15066Cb6Df`](https://testnet.bscscan.com/address/0x8603B62b82166D68A9f76d2753bD8a15066Cb6Df) and 8 more, source on Sourcify | [Contracts](#contracts) |
+| BSC testnet deployment from Dex's own wallet | CerminSaku [`0x8603B62b82166D68A9f76d2753bD8a15066Cb6Df`](https://testnet.bscscan.com/address/0x8603B62b82166D68A9f76d2753bD8a15066Cb6Df) and 8 more, source on Sourcify | [Contracts](#contracts) |
 | CI | GitHub Actions: forge build + test, keeper typecheck + test, web typecheck + lint + build | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) |
 
 ## Judge path (5 minutes, no wallet needed)
@@ -89,7 +89,7 @@ the spendable bucket; savings stay as the defense reserve and BNB collateral is 
 
 ## Provenance
 
-> **Provenance.** Cermin's vault engine (CerminVault + CerminFactory + keeper) was written by Yeheskiel Yunus Tame (Kiel) in May 2026 for the Mezo Hackathon 2, where it won 1st place in the Bitcoin Banking track ([original repo](https://github.com/yeheskieltame/Cermin), MIT). Kiel ported it to BNB Chain in late September 2026 with a mock Liquity-style CDP, because no Liquity-compatible CDP exists on BSC. **Built during this hackathon (5–7 Oct 2026) by Dex Bennett:** Cermin Saku (scheduled allowances paid from the Shadow only while the BNB position is safe), CerminLens (what-if price view), a Bahasa Indonesia + Rupiah interface, our own BSC testnet deployment, tests and CI. Every line we added is in commits dated 5–7 Oct; see [`CONTRIBUTIONS.md`](CONTRIBUTIONS.md).
+> **Provenance.** Cermin's vault engine (CerminVault + CerminFactory + keeper) was written by Yeheskiel Yunus Tame (Kiel) in May 2026 for the Mezo Hackathon 2, where it won 1st place in the Bitcoin Banking track ([original repo](https://github.com/yeheskieltame/Cermin), MIT). Kiel ported it to BNB Chain in late September 2026 with a mock Liquity-style CDP, because no Liquity-compatible CDP exists on BSC. **Built by Dex Bennett on 5–7 Oct 2026, within the hackathon submission period:** Cermin Saku (scheduled allowances paid from the Shadow only while the BNB position is safe), CerminLens (what-if price view), a Bahasa Indonesia + Rupiah interface, our own BSC testnet deployment, tests and CI. Every line we added is in commits dated 5–7 Oct; see [`CONTRIBUTIONS.md`](CONTRIBUTIONS.md).
 
 The first commit of this repository ([`e767fde`](https://github.com/Stylenecy/cermin-saku/commit/e767fde)) is Kiel's published code, unchanged.
 Kiel's own notes from the port are kept in [`docs/upstream-*.md`](docs).

@@ -6,7 +6,7 @@ Commit [`e767fde`](https://github.com/Stylenecy/cermin-saku/commit/e767fde) is K
 (source: `bcc-ukdw/seed-bnb` at `52671ce`, folder `Cermin/`; the Mezo pitch deck, Mezo logo files, a blog copy and
 three Mezo-era screenshots were left out of the import).
 
-Everything below was built by **Dex Bennett** during Indonesia Web3 Hackathon 2026, 5–7 October 2026.
+Everything below was built by **Dex Bennett** on 5–7 October 2026, within the Indonesia Web3 Hackathon 2026 submission period.
 To see exactly what changed in Kiel's files: `git diff e767fde -- contracts/src agent/src frontend/src`.
 
 ## What is new
@@ -14,10 +14,10 @@ To see exactly what changed in Kiel's files: `git diff e767fde -- contracts/src 
 | Area | New | Changed from Cermin |
 |---|---|---|
 | Contracts | `CerminSaku.sol` (schedules, permissionless `release`, holds), `CerminLens.sol` (price lines, previews) | `CerminVault.sol` v1.1: spend allowance for a delegated spender, the two Saku safety gates (`_sakuStatus`), Saku policy, min debt / gas compensation as deploy-time immutables. `ICerminVault.sol` extended. Mocks: admin functions made owner-only; gas compensation configurable. `Deploy.s.sol` rewritten for the full stack + JSON manifest |
-| Tests | `test/saku/`: 28 Saku unit + fuzz, 7 Lens (preview equals execution, exact pause-price boundary), 8 invariant (paid ≤ granted, allowance accounting, no unsafe payment, ledger = balances, BNB never decreases, spendable backed, periods bounded, positive control) | Kiel's 33 tests kept; only `setUp` adapted to the new constructors (logic untouched) |
+| Tests | `test/saku/`: 28 Saku unit + fuzz, 7 Lens (preview equals execution, exact pause-price boundary), 8 in the invariant suite: 7 invariants (paid ≤ granted, allowance accounting, no unsafe payment, ledger = balances, BNB never decreases, spendable backed, periods bounded) + 1 positive control | Kiel's 33 tests kept; only `setUp` adapted to the new constructors (logic untouched) |
 | Keeper | `monitors/saku.ts`, `executors/release.ts`, `scripts/demo.ts`, `abis/generated.ts`, 6 node:test cases | `index.ts` runs Saku after skim/defend; `config.ts` (SAKU_ADDRESS, hold cooldown, chain 31337); `chain.ts` (Anvil) |
 | Web | Landing, `/bukti` (no-wallet proof page), `/saku` (schedule envelopes), `/terima` (recipient view), Lens panel, on-chain passbook, ID/EN switch, Rupiah display with a labelled indicative rate | New palette and type (see `docs/DESIGN.md`), Kiel's dashboard and onboarding translated |
-| Ops | GitHub Actions CI, local Anvil rehearsal, own BSC testnet deployment (fresh deployer) | Kiel's port notes moved to `docs/upstream-*` |
+| Ops | GitHub Actions CI, local Anvil rehearsal, fork rehearsal, one-command deploy + wiring (`scripts/`), BSC testnet deployment from Dex's own fresh deployer, on-chain demo run (`docs/TESTNET-DEPLOY.md`), passbook export (`agent/scripts/ledger.ts`) | Kiel's port notes moved to `docs/upstream-*` |
 
 ## Commit log (newest last)
 
@@ -25,7 +25,17 @@ To see exactly what changed in Kiel's files: `git diff e767fde -- contracts/src 
 | Commit | Date (WIB) | What |
 |---|---|---|
 | `e767fde` | 5 Oct 03:54 | Import Cermin by Kiel, unchanged |
-| `c913c57` | 5 Oct 04:1x | Contracts: Saku, Lens, vault v1.1, hardened mocks, 76 tests |
-| `a40687f` | 5 Oct 04:4x | Keeper: pay due allowances, record holds on-chain |
-| `8c15ca2` | 5 Oct 04:4x | README, provenance, CI, local rehearsal |
+| `c913c57` | 5 Oct 04:14 | feat(contracts): Cermin Saku — safety-gated scheduled allowances + Lens |
+| `a40687f` | 5 Oct 04:46 | feat(keeper): pay due Saku allowances, record holds on-chain |
+| `8c15ca2` | 5 Oct 04:46 | docs+ci: proof-first README, provenance, CI, local rehearsal |
+| `d7b0d29` | 5 Oct 04:58 | chore: one-shot testnet deploy, Sourcify verify, CI on Node 22 |
+| `330b173` | 6 Oct 12:25 | feat(web): Bahasa Indonesia + Rupiah interface, Saku pages |
+| `cca3be4` | 6 Oct 12:25 | chore(scripts): one-command deploy wiring and fork rehearsal |
+| `d1ea739` | 6 Oct 12:25 | chore: keep LF endings for shell scripts |
+| `d2a3813` | 6 Oct 12:53 | fix(web): passbook stays fast weeks after deploy; clearer Lens axis |
+| `af56f63` | 6 Oct 12:57 | fix(web): one DITAHAN stamp across the held run in the hero; no orphan "mu" |
+| `198f6f1` | 6 Oct 13:02 | chore: deploy Cermin Saku to BSC testnet |
+| `16f6605` | 6 Oct 13:19 | docs: on-chain demo run on BSC testnet; ledger export script |
+| `09a2566` | 6 Oct 13:19 | docs(readme): link the on-chain demo run |
+| `a883420` | 6 Oct 13:26 | docs(readme): say 7 invariants + 1 positive control |
 <!-- COMMITS:END -->

@@ -135,8 +135,8 @@ const swap = (tag, body) => {
 swap('CONTRACTS', contracts);
 swap('PROOF-LINKS', proof);
 readme = readme.replace(
-  /\| BSC testnet deployment from our own wallet \| [^\n]*/,
-  `| BSC testnet deployment from our own wallet | ${dep.CerminSaku ? `CerminSaku ${link(dep.CerminSaku)} and 8 more, source on Sourcify` : 'see Contracts'} | [Contracts](#contracts) |`,
+  /\| BSC testnet deployment from (?:our|Dex's) own wallet \| [^\n]*/,
+  `| BSC testnet deployment from Dex's own wallet | ${dep.CerminSaku ? `CerminSaku ${link(dep.CerminSaku)} and 8 more, source on Sourcify` : 'see Contracts'} | [Contracts](#contracts) |`,
 );
 writeFileSync(readmePath, readme);
 console.log('README.md contracts table + proof links updated');
