@@ -1,23 +1,23 @@
 # Contributions
 
-This repository starts from **Cermin** by Yeheskiel Yunus Tame (Kiel), MIT
-([original](https://github.com/yeheskieltame/Cermin), Mezo Hackathon 2, May 2026; BNB Chain port by Kiel, late September 2026).
-Commit [`e767fde`](https://github.com/Stylenecy/cermin-saku/commit/e767fde) is Kiel's published code, unchanged
+This repository starts from **Cermin** by Yeheskiel Yunus Tame, MIT
+([original](https://github.com/yeheskieltame/Cermin), Mezo Hackathon 2, May 2026; BNB Chain port by its author, late September 2026).
+Commit [`e767fde`](https://github.com/Stylenecy/cermin-saku/commit/e767fde) is the original published code, unchanged
 (source: `bcc-ukdw/seed-bnb` at `52671ce`, folder `Cermin/`; the Mezo pitch deck, Mezo logo files, a blog copy and
 three Mezo-era screenshots were left out of the import).
 
 Everything below was built by **Dex Bennett** on 5–7 October 2026, within the Indonesia Web3 Hackathon 2026 submission period.
-To see exactly what changed in Kiel's files: `git diff e767fde -- contracts/src agent/src frontend/src`.
+To see exactly what changed in the original files: `git diff e767fde -- contracts/src agent/src frontend/src`.
 
 ## What is new
 
 | Area | New | Changed from Cermin |
 |---|---|---|
 | Contracts | `CerminSaku.sol` (schedules, permissionless `release`, holds), `CerminLens.sol` (price lines, previews) | `CerminVault.sol` v1.1: spend allowance for a delegated spender, the two Saku safety gates (`_sakuStatus`), Saku policy, min debt / gas compensation as deploy-time immutables. `ICerminVault.sol` extended. Mocks: admin functions made owner-only; gas compensation configurable. `Deploy.s.sol` rewritten for the full stack + JSON manifest |
-| Tests | `test/saku/`: 28 Saku unit + fuzz, 7 Lens (preview equals execution, exact pause-price boundary), 8 in the invariant suite: 7 invariants (paid ≤ granted, allowance accounting, no unsafe payment, ledger = balances, BNB never decreases, spendable backed, periods bounded) + 1 positive control | Kiel's 33 tests kept; only `setUp` adapted to the new constructors (logic untouched) |
+| Tests | `test/saku/`: 28 Saku unit + fuzz, 2 crash-reserve stress tests (`SakuStress.t.sol`), 7 Lens (preview equals execution, exact pause-price boundary), 8 in the invariant suite: 7 invariants (paid ≤ granted, allowance accounting, no unsafe payment, ledger = balances, BNB never decreases, spendable backed, periods bounded) + 1 positive control | The original 33 tests kept; only `setUp` adapted to the new constructors (logic untouched) |
 | Keeper | `monitors/saku.ts`, `executors/release.ts`, `scripts/demo.ts`, `abis/generated.ts`, 6 node:test cases | `index.ts` runs Saku after skim/defend; `config.ts` (SAKU_ADDRESS, hold cooldown, chain 31337); `chain.ts` (Anvil) |
 | Web | `/demo` (no-wallet demo vault), `/saku` (schedule envelopes), `/terima` (recipient view), Lens panel, on-chain passbook, Google / email sign-in (Privy, wallet created on login), ID/EN switch, Rupiah display with a labelled indicative rate, landing copy and sections rewritten for Cermin Saku (calculator, gate visual), wallet balance checks in onboarding | Cermin's own design system kept (Fraunces + Geist, paper, components, watercolour illustrations) and recoloured to blue, green and brown (`scripts/recolor-art.py`); Cermin's dashboard and onboarding translated and extended |
-| Ops | GitHub Actions CI, local Anvil rehearsal, fork rehearsal, one-command deploy + wiring (`scripts/`), BSC testnet deployment from Dex's own fresh deployer, on-chain demo run (`docs/TESTNET-DEPLOY.md`), passbook export (`agent/scripts/ledger.ts`) | Kiel's port notes moved to `docs/upstream-*` |
+| Ops | GitHub Actions CI, local Anvil rehearsal, fork rehearsal, one-command deploy + wiring (`scripts/`), BSC testnet deployment from Dex's own fresh deployer, on-chain demo run (`docs/TESTNET-DEPLOY.md`), passbook export (`agent/scripts/ledger.ts`) | The original port notes moved to `docs/upstream-*` |
 
 ## Commit log (newest last)
 

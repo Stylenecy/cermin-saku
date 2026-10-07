@@ -98,8 +98,8 @@ function NoPositionState() {
         </h2>
         <p className="text-muted text-sm mt-3 max-w-md mx-auto leading-relaxed">
           {t(
-            "Setor BNB sekali untuk membuka vault-mu di BNB Chain. Dari situ kamu bisa menjadwalkan uang saku untuk anakmu, tanpa pernah menjual BNB.",
-            "Deposit BNB once to open your vault on BNB Chain. From there you can schedule your child's allowance, without ever selling your BNB.",
+            "Setor BNB sekali untuk membuka vault-mu di BNB Chain. Dari situ kamu bisa menjadwalkan uang saku untuk anakmu tanpa menjual BNB untuk membayarnya.",
+            "Deposit BNB once to open your vault on BNB Chain. From there you can schedule your child's allowance without selling BNB to pay it.",
           )}
         </p>
         <div className="mt-8 flex justify-center">

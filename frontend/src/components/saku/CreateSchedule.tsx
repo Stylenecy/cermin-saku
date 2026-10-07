@@ -104,7 +104,7 @@ export function CreateSchedule({
           {t("Nominal per amplop (Rp)", "Amount per envelope (Rp)")}
           <input className={`${field} tabular`} inputMode="numeric" value={idr} onChange={(e) => setIdr(e.target.value.replace(/[^0-9]/g, ""))} />
           <span className="mt-1 block text-xs font-normal text-muted">
-            = <Rp wei={amount} showUsd /> {t("(dibulatkan ke sen)", "(rounded to the cent)")}
+            = <Rp wei={amount} showUsd /> {t("· tersimpan di kontrak dalam MUSD; nilai Rupiah-nya ikut kurs", "· stored on-chain in MUSD; its Rupiah value follows the rate")}
           </span>
         </label>
         <label className="block text-sm font-semibold text-ink">
@@ -176,8 +176,8 @@ export function CreateSchedule({
       )}
       <p className="mt-4 text-xs text-muted">
         {t(
-          "Izin (langkah 1) adalah batas keras di kontrak vault: Saku tidak akan pernah bisa memindahkan lebih dari ini. Kamu bisa mencabutnya kapan saja.",
-          "The allowance (step 1) is a hard cap in the vault contract: Saku can never move more than this. You can revoke it any time.",
+          "Izin (langkah 1) adalah batas di kontrak vault: Saku tidak bisa memindahkan lebih dari ini. Hanya kamu yang bisa menambah atau mencabutnya.",
+          "The allowance (step 1) is a cap in the vault contract: Saku cannot move more than this. Only you can raise or revoke it.",
         )}
       </p>
     </form>

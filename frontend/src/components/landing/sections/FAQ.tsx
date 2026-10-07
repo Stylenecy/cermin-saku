@@ -29,8 +29,8 @@ export function FAQ() {
     {
       q: t("Kalau uang saku ditahan, anakku bagaimana?", "If an allowance is held, what about my child?"),
       a: t(
-        "Amplop yang ditahan tidak hilang: tetap terutang dan dibayar otomatis begitu posisi aman. Di dasbor kamu langsung melihatnya dan bisa menambah BNB supaya aman lebih cepat. Untuk kebutuhan pokok seperti kos dan makan, jangan bergantung pada satu aset yang naik-turun; Cermin Saku paling pas sebagai uang saku di atas itu.",
-        "A held envelope is not lost: it stays owed and is paid automatically once the position is safe. You see it on the dashboard and can add BNB to make it safe sooner. For essentials such as rent and food, do not depend on a single volatile asset; Cermin Saku fits best as the allowance on top of that.",
+        "Amplop yang ditahan tidak hilang: tetap terutang dan dibayar begitu posisi aman lagi, oleh penjaga (keeper) atau siapa pun yang memicu pembayaran. Di dasbor kamu langsung melihatnya dan bisa menambah BNB supaya aman lebih cepat. Untuk kebutuhan pokok seperti kos dan makan, jangan bergantung pada satu aset yang naik-turun; Cermin Saku paling pas sebagai uang saku di atas itu.",
+        "A held envelope is not lost: it stays owed and is paid once the position is safe again, by the keeper or anyone who triggers the payment. You see it on the dashboard and can add BNB to make it safe sooner. For essentials such as rent and food, do not depend on a single volatile asset; Cermin Saku fits best as the allowance on top of that.",
       ),
     },
     {

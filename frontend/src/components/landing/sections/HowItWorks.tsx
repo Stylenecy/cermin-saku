@@ -58,7 +58,7 @@ export function HowItWorks() {
           <Eyebrow icon={<Layers className="w-3.5 h-3.5" />} label={t("Cara kerja", "How it works")} note={t("setor → jadwal → aman", "deposit → schedule → safe")} />
           <h2 className="font-serif text-3xl md:text-[2.75rem] font-medium tracking-[-0.02em] leading-[1.08] text-balance mt-5">
             {t("Tiga langkah. Satu vault. ", "Three steps. One vault. ")}
-            <em className="italic font-normal text-amber-600">{t("Tanpa menjual BNB.", "No BNB sold.")}</em>
+            <em className="italic font-normal text-amber-600">{t("BNB tetap utuh.", "BNB stays put.")}</em>
           </h2>
           <p className="text-muted mt-4 text-pretty leading-relaxed">
             {t(

@@ -9,7 +9,7 @@ Scheduled allowances paid from a BNB vault on BNB Chain. The vault contract itse
 when the position is not safe, and pays it once it is. No BNB is sold to pay an allowance.
 Parents sign in with Google or email (a wallet is created for them) or bring their own wallet.
 
-Built on **Cermin** by Kiel (MIT) · Indonesia Web3 Hackathon 2026 · BSC testnet
+Built on **Cermin**, an open-source vault engine (MIT) · Indonesia Web3 Hackathon 2026 · BSC testnet
 
 <!-- PROOF-LINKS:START -->
 Live app: [cermin-saku.vercel.app](https://cermin-saku.vercel.app) · Demo video: [YouTube](https://youtu.be/FEZUq4Cbgrs) · Demo vault, no wallet: [/demo](https://cermin-saku.vercel.app/demo) · [Contracts on BscScan](#contracts)
@@ -37,7 +37,7 @@ vault itself, recorded on chain with its reason, and paid later when it is safe.
 
 | Built during the hackathon (5–7 Oct 2026) | From Cermin (open source, MIT) |
 |---|---|
-| `CerminSaku` (schedules, permissionless `release`, holds), the two safety gates and spend allowance in `CerminVault` v1.1, `CerminLens`, the keeper's allowance payer, 43 new tests, CI, the Bahasa Indonesia + Rupiah product (landing, `/saku`, `/terima`, `/demo`, Google sign-in), our own BSC testnet deployment | the vault engine (`CerminVault`, `CerminFactory`), the skim/defend keeper, the mock CDP, the web app's base design and watercolour illustrations |
+| `CerminSaku` (schedules, permissionless `release`, holds), the two safety gates and spend allowance in `CerminVault` v1.1, `CerminLens`, the keeper's allowance payer, 45 new tests, CI, the Bahasa Indonesia + Rupiah product (landing, `/saku`, `/terima`, `/demo`, Google sign-in), our own BSC testnet deployment | the vault engine (`CerminVault`, `CerminFactory`), the skim/defend keeper, the mock CDP, the web app's base design and watercolour illustrations |
 
 ## What this prototype proves, and what it does not
 
@@ -88,8 +88,9 @@ are exact.
 
 | What | Evidence | How to check |
 |---|---|---|
-| Contracts tested | **76 forge tests passing**: 33 original Cermin + 28 Saku unit/fuzz + 7 Lens + 8 in the invariant suite (7 invariants + 1 positive control; 64 runs × 64 calls each) | `cd contracts && forge test` |
+| Contracts tested | **78 forge tests passing**: 33 original Cermin + 28 Saku unit/fuzz + 2 crash-reserve stress tests + 7 Lens + 8 in the invariant suite (7 invariants + 1 positive control; 64 runs × 64 calls each) | `cd contracts && forge test` |
 | Payment never made while unsafe | invariant `invariant_NoUnsafePayment` + fuzz `testFuzz_NeverPaysBelowFloor` | [`test/saku/`](contracts/test/saku) |
+| Paying never eats the defense | fuzz `testFuzz_PaidAllowanceLeavesEnoughToDefendAfterStress`: after any payment the gates allow and a further stress fall, `defend()` gets ICR back to 140% | [`SakuStress.t.sol`](contracts/test/saku/SakuStress.t.sol) |
 | Saku never moves more than granted | invariants `invariant_PaidNeverExceedsGranted`, `invariant_AllowanceAccounting` | same |
 | BNB collateral never decreases | `invariant_CollateralNeverDecreases` | same |
 | Lens = real execution | fuzz `testFuzz_PreviewDefendEqualsDefend`, `testFuzz_PreviewSkimEqualsSkim`, `testFuzz_PausePriceIsExactBoundary` | [`CerminLens.t.sol`](contracts/test/saku/CerminLens.t.sol) |
@@ -136,19 +137,21 @@ sequenceDiagram
 | Gate | Rule | Default (Balanced preset) |
 |---|---|---|
 | 1. Health floor | `ICR ≥ defendICR + floorBuffer` | keeper defends at 140%, so allowances stop below **150%** |
-| 2. Crash reserve | `spendable − amount + savings ≥ repay that defend() would need to restore defendICR after a stress% drop` | must survive another **30%** fall |
+| 2. Crash reserve | `spendable − amount + savings ≥ repay that defend() would need to restore defendICR after a stress% drop` | after another **30%** fall, enough is left for `defend()` to bring ICR back to **140%** |
 
 The owner can tune the policy within hard bounds (`setSakuPolicy`: buffer 5–50 points, crash reserve 10–70%; default 10 points and 30%) but cannot turn it off.
-The owner's allowance (`setSpendAllowance`) is a hard cap on everything Saku may ever move. Payments come only out of
+
+Below the 120% emergency line `defend()` aims higher (160%) and spends everything available. Gate 2 budgets for the 140% defense line, so after such a fall the position returns above 140% but may stop short of 160%; [`SakuStress.t.sol`](contracts/test/saku/SakuStress.t.sol) fuzzes this end to end.
+The owner's allowance (`setSpendAllowance`) caps what Saku can move; only the owner can raise or revoke it. Payments come only out of
 the spendable bucket; savings stay as the defense reserve and BNB collateral is never touched. The owner's own
 `withdrawSpendable` keeps Cermin's original behaviour: Saku constrains money that leaves on *someone else's* schedule.
 
 ## Provenance
 
-> **Provenance.** Cermin's vault engine (CerminVault + CerminFactory + keeper), and the web app's base design and watercolour illustrations, were written by Yeheskiel Yunus Tame (Kiel) in May 2026 for the Mezo Hackathon 2, where it won 1st place in the Bitcoin Banking track ([original repo](https://github.com/yeheskieltame/Cermin), MIT). Kiel ported it to BNB Chain in late September 2026 with a mock Liquity-style CDP, because no Liquity-compatible CDP exists on BSC. **Built by Dex Bennett on 5–7 Oct 2026, within the hackathon submission period:** Cermin Saku (scheduled allowances paid from the Shadow only while the BNB position is safe), CerminLens (what-if price view), a Bahasa Indonesia + Rupiah product on that base (rewritten landing, recoloured palette and illustrations, allowance, recipient and no-wallet demo pages, Google sign-in), our own BSC testnet deployment, tests and CI. Every line we added is in commits dated 5–7 Oct; see [`CONTRIBUTIONS.md`](CONTRIBUTIONS.md).
+> **Provenance.** Cermin Saku is built on **Cermin**, an open-source project (MIT) by Yeheskiel Yunus Tame ([original repo](https://github.com/yeheskieltame/Cermin)): its vault engine (CerminVault + CerminFactory + the skim/defend keeper), the mock Liquity-style CDP, and the web app's base design and watercolour illustrations come from there. It was first written for Mezo Hackathon 2 (May 2026) and ported to BNB Chain by its author in late September 2026. **Built by Dex Bennett on 5–7 Oct 2026, within the hackathon submission period:** Cermin Saku (scheduled allowances paid only while the BNB position is safe), the spend allowance and the two gates in CerminVault v1.1, CerminLens (what-if price view), the keeper's allowance payer, the Bahasa Indonesia + Rupiah product on that base (rewritten landing, recoloured palette and illustrations, allowance, recipient and no-wallet demo pages, Google sign-in), our own BSC testnet deployment, tests and CI. Every line we added is in commits dated 5–7 Oct; see [`CONTRIBUTIONS.md`](CONTRIBUTIONS.md).
 
-The first commit of this repository ([`e767fde`](https://github.com/Stylenecy/cermin-saku/commit/e767fde)) is Kiel's published code, unchanged.
-Kiel's own notes from the port are kept in [`docs/upstream-*.md`](docs).
+The first commit of this repository ([`e767fde`](https://github.com/Stylenecy/cermin-saku/commit/e767fde)) is the original published code, unchanged.
+The original author's notes from the port are kept in [`docs/upstream-*.md`](docs).
 
 ## Architecture
 
@@ -161,7 +164,7 @@ flowchart LR
         Lens["CerminLens<br/>what-if views"]
         KeeperS["Keeper: releaseDue"]
     end
-    subgraph Kiel["Cermin (Kiel, MIT)"]
+    subgraph Upstream["Cermin (open source, MIT)"]
         Factory["CerminFactory"] -->|clones| Vault["CerminVault v1.1<br/>+ spend allowance + 2 gates"]
         KeeperK["Keeper: skim / defend"]
     end
@@ -185,8 +188,8 @@ flowchart LR
 |---|---|---|
 | CerminSaku | [`0x8603B62b82166D68A9f76d2753bD8a15066Cb6Df`](https://testnet.bscscan.com/address/0x8603B62b82166D68A9f76d2753bD8a15066Cb6Df) | new · schedules, `release`, holds |
 | CerminLens | [`0x3287Be66C493d24B492c300A179B33f1a7A0B6bc`](https://testnet.bscscan.com/address/0x3287Be66C493d24B492c300A179B33f1a7A0B6bc) | new · what-if price views |
-| CerminFactory | [`0x1dD819Fafc6B649dCfE682a6d165d7d8CA4C4013`](https://testnet.bscscan.com/address/0x1dD819Fafc6B649dCfE682a6d165d7d8CA4C4013) | Kiel · clones vaults |
-| CerminVaultImpl | [`0x23a865ed98d471398C2b161c3C4A2fCBC129257c`](https://testnet.bscscan.com/address/0x23a865ed98d471398C2b161c3C4A2fCBC129257c) | Kiel + Saku gates (v1.1 implementation) |
+| CerminFactory | [`0x1dD819Fafc6B649dCfE682a6d165d7d8CA4C4013`](https://testnet.bscscan.com/address/0x1dD819Fafc6B649dCfE682a6d165d7d8CA4C4013) | Cermin · clones vaults |
+| CerminVaultImpl | [`0x23a865ed98d471398C2b161c3C4A2fCBC129257c`](https://testnet.bscscan.com/address/0x23a865ed98d471398C2b161c3C4A2fCBC129257c) | Cermin + Saku gates (v1.1 implementation) |
 | PriceFeed | [`0xab5D57Fc63C9D7D271312ffbbB8a658A883A1389`](https://testnet.bscscan.com/address/0xab5D57Fc63C9D7D271312ffbbB8a658A883A1389) | simulated BNB/USD (MockPriceFeed, seeded from Chainlink) |
 | MUSD | [`0xAc319a7FffEEd3D5e1Ae7a776151168Bd0dCfe59`](https://testnet.bscscan.com/address/0xAc319a7FffEEd3D5e1Ae7a776151168Bd0dCfe59) | mock stablecoin |
 | BorrowerOperations | [`0xd5F721410C2E2A373bdFA8AD6f43a78E3C6fC462`](https://testnet.bscscan.com/address/0xd5F721410C2E2A373bdFA8AD6f43a78E3C6fC462) | mock CDP |
@@ -199,9 +202,9 @@ flowchart LR
 |---|---|---|
 | `CerminSaku` | [src/CerminSaku.sol](contracts/src/CerminSaku.sol) | **new** · schedules, permissionless `release`, holds |
 | `CerminLens` | [src/CerminLens.sol](contracts/src/CerminLens.sol) | **new** · price lines, previews of defend / skim / Saku |
-| `CerminVault` v1.1 | [src/CerminVault.sol](contracts/src/CerminVault.sol) | Kiel's vault + spend allowance + the two gates (`git diff e767fde -- contracts/src/CerminVault.sol`) |
-| `CerminFactory` | [src/CerminFactory.sol](contracts/src/CerminFactory.sol) | Kiel's, unchanged |
-| Mock CDP | [test/mocks](contracts/test/mocks) | Kiel's mocks; admin functions made owner-only for a public testnet |
+| `CerminVault` v1.1 | [src/CerminVault.sol](contracts/src/CerminVault.sol) | Cermin's vault + spend allowance + the two gates (`git diff e767fde -- contracts/src/CerminVault.sol`) |
+| `CerminFactory` | [src/CerminFactory.sol](contracts/src/CerminFactory.sol) | Cermin's, unchanged |
+| Mock CDP | [test/mocks](contracts/test/mocks) | Cermin's mocks; admin functions made owner-only for a public testnet |
 
 Demo parameters: the BNB price feed is a **simulated** `MockPriceFeed` owned by our deployer, seeded from Chainlink
 BNB/USD on BSC testnet at deploy time, so drops can be shown on demand. Min debt / gas compensation are deploy-time
@@ -243,7 +246,7 @@ npm run dev
 
 ## Limits we own up to
 
-- **Mock CDP.** BNB Chain has no Liquity-style CDP; the vault runs on Kiel's mock stack. MUSD is play money, and the mock does not execute liquidations.
+- **Mock CDP.** BNB Chain has no Liquity-style CDP; the vault runs on the original mock stack. MUSD is play money, and the mock does not execute liquidations.
 - **Simulated price.** The demo feed is owner-settable so a crash can be shown. The 110% "liquidation line" is the rule a real CDP would enforce.
 - **One keeper.** Our keeper is a single process. `release()` is permissionless and the vault re-checks every payment, so a missing keeper delays payments; it cannot make an unsafe one.
 - **Rupiah is display only.** An indicative USD/IDR rate (ExchangeRate-API, with a dated fallback). No bank off-ramp; that is roadmap.

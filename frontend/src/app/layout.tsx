@@ -29,12 +29,12 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://cermin-saku.vercel
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Cermin Saku — uang saku dari BNB-mu, tanpa menjual BNB",
+  title: "Cermin Saku — uang saku dari BNB-mu yang tahu kapan menahan diri",
   description:
     "Kirim uang saku bulanan ke anak dari vault BNB di BNB Chain. BNB-mu tetap utuh, dan kontraknya menahan pembayaran sendiri saat pasar sedang jatuh.",
   openGraph: {
     title: "Cermin Saku",
-    description: "BNB-mu tetap utuh. Uang sakunya tetap sampai.",
+    description: "Uang saku terjadwal dari BNB-mu. Kontraknya menahan pembayaran sendiri saat posisi tidak aman.",
     type: "website",
   },
 };

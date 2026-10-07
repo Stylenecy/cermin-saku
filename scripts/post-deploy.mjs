@@ -108,8 +108,8 @@ if (local) {
 const rows = [
   ['CerminSaku', 'new · schedules, `release`, holds'],
   ['CerminLens', 'new · what-if price views'],
-  ['CerminFactory', 'Kiel · clones vaults'],
-  ['CerminVaultImpl', 'Kiel + Saku gates (v1.1 implementation)'],
+  ['CerminFactory', 'Cermin · clones vaults'],
+  ['CerminVaultImpl', 'Cermin + Saku gates (v1.1 implementation)'],
   ['PriceFeed', 'simulated BNB/USD (MockPriceFeed, seeded from Chainlink)'],
   ['MUSD', 'mock stablecoin'],
   ['BorrowerOperations', 'mock CDP'],
