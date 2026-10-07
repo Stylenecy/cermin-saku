@@ -21,7 +21,7 @@ interface Pt {
 
 async function fetchHistory(): Promise<Pt[]> {
   const res = await fetch(
-    "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30",
+    "https://api.coingecko.com/api/v3/coins/binancecoin/market_chart?vs_currency=usd&days=30",
   );
   if (!res.ok) throw new Error(`coingecko ${res.status}`);
   const json = (await res.json()) as { prices: [number, number][] };
@@ -53,7 +53,7 @@ export function BtcPriceChart({ currentPrice, liquidationPrice, defensePrice }: 
   const { t, lang } = useLang();
   const { rate } = useUsdIdr();
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["btc-history-30d"],
+    queryKey: ["bnb-history-30d"],
     queryFn: fetchHistory,
     staleTime: 5 * 60_000,
     gcTime: 30 * 60_000,

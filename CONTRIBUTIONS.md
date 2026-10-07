@@ -16,7 +16,7 @@ To see exactly what changed in Kiel's files: `git diff e767fde -- contracts/src 
 | Contracts | `CerminSaku.sol` (schedules, permissionless `release`, holds), `CerminLens.sol` (price lines, previews) | `CerminVault.sol` v1.1: spend allowance for a delegated spender, the two Saku safety gates (`_sakuStatus`), Saku policy, min debt / gas compensation as deploy-time immutables. `ICerminVault.sol` extended. Mocks: admin functions made owner-only; gas compensation configurable. `Deploy.s.sol` rewritten for the full stack + JSON manifest |
 | Tests | `test/saku/`: 28 Saku unit + fuzz, 7 Lens (preview equals execution, exact pause-price boundary), 8 in the invariant suite: 7 invariants (paid ≤ granted, allowance accounting, no unsafe payment, ledger = balances, BNB never decreases, spendable backed, periods bounded) + 1 positive control | Kiel's 33 tests kept; only `setUp` adapted to the new constructors (logic untouched) |
 | Keeper | `monitors/saku.ts`, `executors/release.ts`, `scripts/demo.ts`, `abis/generated.ts`, 6 node:test cases | `index.ts` runs Saku after skim/defend; `config.ts` (SAKU_ADDRESS, hold cooldown, chain 31337); `chain.ts` (Anvil) |
-| Web | Landing, `/bukti` (no-wallet proof page), `/saku` (schedule envelopes), `/terima` (recipient view), Lens panel, on-chain passbook, ID/EN switch, Rupiah display with a labelled indicative rate | New palette and type (see `docs/DESIGN.md`), Kiel's dashboard and onboarding translated |
+| Web | `/demo` (no-wallet demo vault), `/saku` (schedule envelopes), `/terima` (recipient view), Lens panel, on-chain passbook, Google / email sign-in (Privy, wallet created on login), ID/EN switch, Rupiah display with a labelled indicative rate, landing copy and sections rewritten for Cermin Saku (calculator, gate visual), wallet balance checks in onboarding | Cermin's own design system kept (Fraunces + Geist, paper, components, watercolour illustrations) and recoloured to blue, green and brown (`scripts/recolor-art.py`); Cermin's dashboard and onboarding translated and extended |
 | Ops | GitHub Actions CI, local Anvil rehearsal, fork rehearsal, one-command deploy + wiring (`scripts/`), BSC testnet deployment from Dex's own fresh deployer, on-chain demo run (`docs/TESTNET-DEPLOY.md`), passbook export (`agent/scripts/ledger.ts`) | Kiel's port notes moved to `docs/upstream-*` |
 
 ## Commit log (newest last)
@@ -24,18 +24,30 @@ To see exactly what changed in Kiel's files: `git diff e767fde -- contracts/src 
 <!-- COMMITS:START -->
 | Commit | Date (WIB) | What |
 |---|---|---|
-| `e767fde` | 5 Oct 03:54 | Import Cermin by Kiel, unchanged |
-| `c913c57` | 5 Oct 04:14 | feat(contracts): Cermin Saku — safety-gated scheduled allowances + Lens |
-| `a40687f` | 5 Oct 04:46 | feat(keeper): pay due Saku allowances, record holds on-chain |
-| `8c15ca2` | 5 Oct 04:46 | docs+ci: proof-first README, provenance, CI, local rehearsal |
-| `d7b0d29` | 5 Oct 04:58 | chore: one-shot testnet deploy, Sourcify verify, CI on Node 22 |
+| `e767fde` | 5 Oct 03:54 | Import Cermin, unchanged |
+| `c913c57` | 5 Oct 04:14 | feat(contracts): Cermin Saku — safety-gated scheduled al... |
+| `a40687f` | 5 Oct 04:46 | feat(keeper): pay due Saku allowances, record holds on-c... |
+| `8c15ca2` | 5 Oct 04:46 | docs+ci: proof-first README, provenance, CI, local rehea... |
+| `d7b0d29` | 5 Oct 04:58 | chore: one-shot testnet deploy, Sourcify verify, CI on N... |
 | `330b173` | 6 Oct 12:25 | feat(web): Bahasa Indonesia + Rupiah interface, Saku pages |
-| `cca3be4` | 6 Oct 12:25 | chore(scripts): one-command deploy wiring and fork rehearsal |
+| `cca3be4` | 6 Oct 12:25 | chore(scripts): one-command deploy wiring and fork rehea... |
 | `d1ea739` | 6 Oct 12:25 | chore: keep LF endings for shell scripts |
-| `d2a3813` | 6 Oct 12:53 | fix(web): passbook stays fast weeks after deploy; clearer Lens axis |
-| `af56f63` | 6 Oct 12:57 | fix(web): one DITAHAN stamp across the held run in the hero; no orphan "mu" |
+| `d2a3813` | 6 Oct 12:53 | fix(web): passbook stays fast weeks after deploy; cleare... |
+| `af56f63` | 6 Oct 12:57 | fix(web): one DITAHAN stamp across the held run in the h... |
 | `198f6f1` | 6 Oct 13:02 | chore: deploy Cermin Saku to BSC testnet |
-| `16f6605` | 6 Oct 13:19 | docs: on-chain demo run on BSC testnet; ledger export script |
+| `16f6605` | 6 Oct 13:19 | docs: on-chain demo run on BSC testnet; ledger export sc... |
 | `09a2566` | 6 Oct 13:19 | docs(readme): link the on-chain demo run |
 | `a883420` | 6 Oct 13:26 | docs(readme): say 7 invariants + 1 positive control |
+| `bd7fea8` | 6 Oct 13:52 | docs: full dated commit log, precise wording on who buil... |
+| `41e3fda` | 6 Oct 13:59 | fix(web): fonts load everywhere, passbook-ink connect bu... |
+| `d413e7b` | 6 Oct 14:07 | fix(web): Lens tests the last envelope once every schedu... |
+| `60c1a9d` | 6 Oct 14:26 | docs: link the live app (cermin-saku.vercel.app) and its... |
+| `11936a5` | 6 Oct 19:15 | feat(web): back to Cermin's own design, in Cermin Saku's... |
+| `2d62120` | 6 Oct 19:40 | feat(web): the app behind "Launch app" in Cermin's style... |
+| `cbb3171` | 6 Oct 21:29 | feat(web): sign in with Google or email through Privy, w... |
+| `f33ff29` | 6 Oct 21:39 | feat(web): turn on Privy sign-in (public app id) |
+| `fcf7ebe` | 6 Oct 22:02 | copy(web): sign in with Google or a wallet, not only con... |
+| `ceb9f13` | 6 Oct 22:28 | docs: point the judge path at /demo (the old /bukti stil... |
+| `3b6662d` | 7 Oct 04:26 | docs: Google / email sign-in through Privy in the README... |
+| `5b9c0c2` | 7 Oct 16:16 | docs: link the demo video |
 <!-- COMMITS:END -->

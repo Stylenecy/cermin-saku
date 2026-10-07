@@ -11,7 +11,7 @@ export function ContractList() {
   const rows: [string, string, `0x${string}`][] = [
     ["CerminSaku", t("jadwal & pembayaran uang saku (baru)", "allowance schedules & payments (new)"), SAKU.SAKU],
     ["CerminLens", t("kalkulator 'kalau BNB jadi X' (baru)", "'what if BNB goes to X' (new)"), SAKU.LENS],
-    ["CerminFactory", t("pembuat vault (v1.1 impl, mesin Kiel)", "vault factory (v1.1 impl, Kiel's engine)"), CONTRACTS.CERMIN_FACTORY],
+    ["CerminFactory", t("pembuat vault (mesin Cermin open-source, v1.1)", "vault factory (open-source Cermin engine, v1.1)"), CONTRACTS.CERMIN_FACTORY],
     ["MockPriceFeed", t("harga BNB simulasi (pemilik = deployer kami)", "simulated BNB price (owner = our deployer)"), CONTRACTS.PRICE_FEED],
     ["MockMUSD", t("stablecoin tiruan CDP", "mock CDP stablecoin"), CONTRACTS.MUSD],
   ];
