@@ -12,7 +12,7 @@ Parents sign in with Google or email (a wallet is created for them) or bring the
 Built on **Cermin** by Kiel (MIT) · Indonesia Web3 Hackathon 2026 · BSC testnet
 
 <!-- PROOF-LINKS:START -->
-Live app: [cermin-saku.vercel.app](https://cermin-saku.vercel.app) · Demo video: *pending* · Demo vault, no wallet: [/demo](https://cermin-saku.vercel.app/demo) · [Contracts on BscScan](#contracts)
+Live app: [cermin-saku.vercel.app](https://cermin-saku.vercel.app) · Demo video: [YouTube](https://youtu.be/FEZUq4Cbgrs) · Demo vault, no wallet: [/demo](https://cermin-saku.vercel.app/demo) · [Contracts on BscScan](#contracts)
 <!-- PROOF-LINKS:END -->
 
 </div>
