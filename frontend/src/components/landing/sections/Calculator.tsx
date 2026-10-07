@@ -116,8 +116,8 @@ export function Calculator() {
             </div>
             <p className="mt-6 text-xs text-muted-2">
               {t(
-                `Harga acuan 1 BNB = ${formatIdr(bnbUsd * rate)} (feed testnet). Kalau BNB naik, vault bisa menambah saldo pakai; kalau turun jauh, uang saku ditahan dulu.`,
-                `Reference price 1 BNB = ${formatIdr(bnbUsd * rate)} (testnet feed). If BNB rises the vault can top up the spendable balance; if it falls far, the allowance is held first.`,
+                `Harga acuan 1 BNB = ${formatIdr(bnbUsd * rate)} (feed testnet). Kalau BNB naik, vault bisa menambah saldo pakai; kalau turun jauh, uang saku ditahan dulu. Belum termasuk bunga pinjaman di jaringan utama.`,
+                `Reference price 1 BNB = ${formatIdr(bnbUsd * rate)} (testnet feed). If BNB rises the vault can top up the spendable balance; if it falls far, the allowance is held first. Mainnet borrowing interest is not included.`,
               )}
             </p>
           </Card>

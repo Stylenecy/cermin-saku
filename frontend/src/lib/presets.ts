@@ -44,8 +44,8 @@ export const GOAL_LABELS: Record<GoalLabel, { title: Bilingual; tagline: Bilingu
   forever: {
     title: { id: "Uang Saku Selamanya", en: "Forever Allowance" },
     tagline: {
-      id: "Hasil yang terus mengalir tanpa batas waktu. BNB tidak pernah dijual.",
-      en: "Earn sustainable yield indefinitely. BNB never sold.",
+      id: "Hasil yang terus mengalir tanpa batas waktu. BNB tidak dijual untuk membayarnya.",
+      en: "Earn sustainable yield indefinitely. No BNB is sold to pay for it.",
     },
     badge: { id: "Pensiun", en: "Pension" },
   },

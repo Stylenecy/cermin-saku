@@ -86,7 +86,7 @@ export function BtcBalanceCard({
             <p className="text-[11px] uppercase tracking-[0.16em] text-muted font-medium">
               {t("BNB · jaminan", "BNB · collateral")}
             </p>
-            <p className="text-muted-2 text-xs">{t("Terkunci · tidak pernah dijual", "Locked · never sold")}</p>
+            <p className="text-muted-2 text-xs">{t("Terkunci sebagai jaminan", "Locked as collateral")}</p>
           </div>
         </div>
         <Badge variant="success">
