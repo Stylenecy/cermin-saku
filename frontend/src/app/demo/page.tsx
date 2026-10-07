@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { zeroAddress } from "viem";
 import { motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Minus } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 import { SAKU, sakuDeployed } from "@/lib/saku";
 import { fadeUp, staggerContainer } from "@/lib/motion";
@@ -113,6 +113,10 @@ export default function DemoPage() {
                 <Ledger vault={vault} limit={8} keyFirst />
               </motion.div>
 
+              <motion.div variants={fadeUp} className="mt-10">
+                <DemoScope />
+              </motion.div>
+
               <details className="group mt-10 rounded-3xl border border-cream-300 bg-surface/60 px-6 py-4">
                 <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-ink">
                   {t("Detail teknis: alamat kontrak", "Technical details: contract addresses")}
@@ -131,3 +135,57 @@ export default function DemoPage() {
     </div>
   );
 }
+
+/** What this testnet demo proves, and what it does not: stated once, plainly. */
+function DemoScope() {
+  const { t } = useLang();
+  const proven = [
+    t("Aturan uang saku dijalankan di dalam vault, bukan oleh aplikasi", "The allowance rule is enforced inside the vault, not by the app"),
+    t("Urutan nyata on-chain: dibayar → ditahan → dibela → dibayar lagi", "A real on-chain sequence: paid → held → defended → paid again"),
+    t("Siapa pun bisa memicu pembayaran; vault tetap memeriksa ulang", "Anyone can trigger a payment; the vault re-checks it anyway"),
+  ];
+  const notYet = [
+    t("Bunga pinjaman sungguhan: CDP tiruan di testnet tidak memungut bunga", "Real borrowing cost: the testnet mock CDP charges no interest"),
+    t("Harga dan likuidasi sungguhan: harga BNB di sini disimulasikan", "Real prices and liquidations: the BNB price here is simulated"),
+    t("Penukaran ke Rupiah, pengguna nyata, dan audit keamanan", "Rupiah off-ramp, real users, and a security audit"),
+  ];
+  return (
+    <section aria-labelledby="scope-title" className="rounded-3xl border border-cream-300 bg-surface shadow-soft p-6 sm:p-8">
+      <h2 id="scope-title" className="font-serif text-2xl font-medium tracking-[-0.02em] text-ink">
+        {t("Yang dibuktikan demo ini, ", "What this demo proves, ")}
+        <em className="italic font-normal text-amber-600">{t("dan yang belum", "and what it does not")}</em>
+      </h2>
+      <div className="mt-6 grid gap-6 md:grid-cols-2">
+        <ul className="space-y-3">
+          {proven.map((x) => (
+            <li key={x} className="flex gap-3 text-[15px] leading-relaxed text-ink">
+              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-leaf-50 text-leaf-600">
+                <Check className="h-3.5 w-3.5" />
+              </span>
+              {x}
+            </li>
+          ))}
+        </ul>
+        <ul className="space-y-3">
+          {notYet.map((x) => (
+            <li key={x} className="flex gap-3 text-[15px] leading-relaxed text-muted">
+              <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-cream-200 text-muted">
+                <Minus className="h-3.5 w-3.5" />
+              </span>
+              {x}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <a
+        href="https://github.com/Stylenecy/cermin-saku/blob/dex/cermin-saku/docs/THREAT-MODEL.md"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-6 inline-flex text-sm font-medium text-amber-600 hover:text-amber-700"
+      >
+        {t("Risiko dan batasan lengkap ↗", "Full risks and limits ↗")}
+      </a>
+    </section>
+  );
+}
+

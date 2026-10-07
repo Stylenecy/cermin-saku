@@ -6,7 +6,7 @@ export function TrustStrip() {
   const { t } = useLang();
   const items = [
     t("BNB Chain · testnet", "BNB Chain · testnet"),
-    t("BNB tidak pernah dijual", "BNB is never sold"),
+    t("BNB tidak dijual untuk uang saku", "No BNB sold for allowances"),
     t("Uang saku terjadwal", "Scheduled allowances"),
     t("Ditahan otomatis saat bahaya", "Held automatically when unsafe"),
     t("Kontrak terverifikasi", "Verified contracts"),

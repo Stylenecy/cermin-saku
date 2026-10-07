@@ -6,7 +6,7 @@
 *Uang saku dari BNB-mu, yang tahu kapan harus menahan diri.*
 
 Scheduled allowances paid from a BNB vault on BNB Chain. The vault contract itself refuses a payment
-when the position is not safe, and pays it once it is. BNB is never sold.
+when the position is not safe, and pays it once it is. No BNB is sold to pay an allowance.
 Parents sign in with Google or email (a wallet is created for them) or bring their own wallet.
 
 Built on **Cermin** by Kiel (MIT) · Indonesia Web3 Hackathon 2026 · BSC testnet
@@ -28,6 +28,61 @@ BNB falls can drain exactly the money the position needs to avoid liquidation.
 
 **Cermin Saku** turns the borrowed balance (Cermin's "Shadow") into scheduled envelopes for someone
 else, with one rule enforced by the contract, not by the app: *survival money comes first*.
+
+## What is new here, in one line
+
+Cermin already keeps a BNB-backed loan alive (borrow, skim, defend). **Cermin Saku makes recurring, delegated
+spending obey that protection:** a payment that would eat the buffer defending the collateral is refused by the
+vault itself, recorded on chain with its reason, and paid later when it is safe.
+
+| Built during the hackathon (5–7 Oct 2026) | From Cermin (open source, MIT) |
+|---|---|
+| `CerminSaku` (schedules, permissionless `release`, holds), the two safety gates and spend allowance in `CerminVault` v1.1, `CerminLens`, the keeper's allowance payer, 43 new tests, CI, the Bahasa Indonesia + Rupiah product (landing, `/saku`, `/terima`, `/demo`, Google sign-in), our own BSC testnet deployment | the vault engine (`CerminVault`, `CerminFactory`), the skim/defend keeper, the mock CDP, the web app's base design and watercolour illustrations |
+
+## What this prototype proves, and what it does not
+
+| Proven here | Not proven yet |
+|---|---|
+| The allowance policy is enforced **inside the vault**, not by the app: `release()` checks, and `withdrawSpendableFor` re-checks | Mainnet economics: the mock CDP charges **no interest**; a real lending backend (Venus or Lista) has a borrow rate |
+| A real sequence on BSC testnet: paid → price drop → **held** (`AllowanceHeld`) → keeper **defends** → price recovers → owed envelopes paid | Oracle security: the demo price feed is owner-set so a crash can be shown; production needs a real oracle with staleness checks |
+| Anyone can call `release()`; a missing keeper delays payments but cannot make an unsafe one | Real liquidations (the mock does not liquidate) and stablecoin risk (MUSD is test money) |
+| Lens previews equal real execution (fuzz-tested) | Demand: no user interviews yet. No Rupiah off-ramp. One keeper process. Not audited |
+
+Details: [`docs/THREAT-MODEL.md`](docs/THREAT-MODEL.md).
+
+## Why not just sell a little BNB every month?
+
+For most people, selling is simpler, and that is fine. Cermin Saku is for **long-term BNB holders** who want to keep
+their exposure and still meet a monthly commitment. It replaces repeated sales with a loan, which brings interest and
+liquidation risk. What Cermin Saku adds is that the allowance can never quietly spend the money that protects the BNB.
+
+An illustrative example, not a forecast. Rp 500.000 a month for 12 months is Rp 6 juta. The Balanced profile
+borrows twice that (Rp 12 juta, half spendable, half kept as the defense reserve) against about Rp 24 juta of BNB.
+
+| | Sell BNB monthly | Borrow with Cermin Saku |
+|---|---|---|
+| Cost over a year | upside missed on the BNB sold (about Rp 3 juta of exposure on average) | interest on Rp 12 juta: about Rp 600 ribu at an assumed 5% a year |
+| BNB rises 20% | miss about Rp 600 ribu | roughly break-even |
+| BNB rises more | selling costs more | borrowing wins |
+| BNB flat or falls | selling is cheaper | interest, and allowances pause if the fall is deep |
+
+Rule of thumb: borrowing beats selling only if BNB rises faster than about four times the borrow rate. When an
+allowance is held, the envelope stays owed; the parent sees it on the dashboard and can add BNB to make the position
+safe again sooner. For essentials such as rent, a family should not depend on a single volatile asset; we see
+Cermin Saku as the allowance on top of that.
+
+## Regulatory position
+
+This is a testnet prototype of programmable crypto-asset allocation, **not a payment or remittance service**. In
+Indonesia crypto assets are not legal tender (payments are in Rupiah) and crypto-asset trading is supervised by OJK.
+The recipient receives a stablecoin, not Rupiah; a production version would deliver Rupiah only through a licensed
+partner and would not convert or transmit Rupiah itself.
+
+## Known issue in the demo video
+
+In the opening (0:09–0:17) the Rupiah figure under "0,07 BNB" is the **price of 1 BNB**, not the value of 0.07 BNB
+(about Rp 1 juta). The label was added in the video source after the upload; all on-chain figures later in the video
+are exact.
 
 ## Proof
 
@@ -83,7 +138,7 @@ sequenceDiagram
 | 1. Health floor | `ICR ≥ defendICR + floorBuffer` | keeper defends at 140%, so allowances stop below **150%** |
 | 2. Crash reserve | `spendable − amount + savings ≥ repay that defend() would need to restore defendICR after a stress% drop` | must survive another **30%** fall |
 
-The owner can make the policy stricter (`setSakuPolicy`, buffer 5–50 points, stress 10–70%) but cannot turn it off.
+The owner can tune the policy within hard bounds (`setSakuPolicy`: buffer 5–50 points, crash reserve 10–70%; default 10 points and 30%) but cannot turn it off.
 The owner's allowance (`setSpendAllowance`) is a hard cap on everything Saku may ever move. Payments come only out of
 the spendable bucket; savings stay as the defense reserve and BNB collateral is never touched. The owner's own
 `withdrawSpendable` keeps Cermin's original behaviour: Saku constrains money that leaves on *someone else's* schedule.

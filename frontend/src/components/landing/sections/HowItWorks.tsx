@@ -14,8 +14,8 @@ export function HowItWorks() {
       n: "001",
       title: t("Setor BNB", "Deposit BNB"),
       body: t(
-        "Kunci BNB di vault milikmu sendiri. BNB itu tidak pernah dijual; yang dipakai hanya dolar digital (MUSD) yang dipinjam di atasnya.",
-        "Lock BNB in a vault that is yours alone. That BNB is never sold; only the digital dollars (MUSD) borrowed against it are used.",
+        "Kunci BNB di vault milikmu sendiri. BNB itu tidak dijual untuk membayar uang saku; yang dipakai hanya dolar digital (MUSD) yang dipinjam di atasnya.",
+        "Lock BNB in a vault that is yours alone. No BNB is sold to pay allowances; only the digital dollars (MUSD) borrowed against it are used.",
       ),
       icon: <Coins className="w-7 h-7" />,
       variant: "diamond" as const,
