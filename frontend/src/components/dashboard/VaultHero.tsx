@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { ICRGauge } from "@/components/dashboard/ICRGauge";
 import { formatUsd, truncateAddress, icrLabel, icrToColor } from "@/lib/utils";
-import { formatIdr, useUsdIdr } from "@/lib/idr";
+import { formatIdr, formatNum, useUsdIdr } from "@/lib/idr";
 import { useLang } from "@/lib/i18n";
 import { EXPLORER_URL } from "@/lib/chains";
 import { ExternalLink, ShieldCheck, ShieldAlert } from "lucide-react";
@@ -73,7 +73,7 @@ export function VaultHero({
       </svg>
       <div className="absolute -top-16 -right-4 w-60 h-60 rounded-full bg-amber-500/20 blur-3xl pointer-events-none" />
 
-      <div className="relative grid lg:grid-cols-[1.35fr_1fr] gap-8 items-center">
+      <div className="relative grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-8 items-center [&>*]:min-w-0">
         {/* left — the Shadow (what you live on), cast from BNB held whole */}
         <div>
           <div className="flex flex-wrap items-center gap-2.5 mb-5">
@@ -108,11 +108,11 @@ export function VaultHero({
           <p className="text-sm text-white/55 mt-3">
             {t("Saldo pakai sekarang", "Spendable now")}{" "}
             <span className="tabular-nums">
-              (≈ {spendableUsd.toLocaleString("en-US", { maximumFractionDigits: 2 })} MUSD)
+              (≈ {formatNum(spendableUsd, lang, 2)} MUSD)
             </span>{" "}
             ·{" "}
             {t("dipinjam dari", "borrowed against")}{" "}
-            <span className="text-cream-100 tabular-nums">{btcAmount.toFixed(4)} BNB</span>{" "}
+            <span className="text-cream-100 tabular-nums">{formatNum(btcAmount, lang, 4)} BNB</span>{" "}
             {t("yang tetap utuh", "held whole")}
           </p>
           <p className="text-xs text-white/40 mt-1.5 tabular-nums">
@@ -122,9 +122,9 @@ export function VaultHero({
         </div>
 
         {/* right — health */}
-        <div className="flex items-center gap-5 lg:justify-end">
+        <div className="flex flex-wrap items-center gap-5 lg:flex-nowrap lg:justify-end">
           <ICRGauge icr={icr} dark />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1 basis-44">
             <div className="flex items-center gap-2 mb-3">
               <span className="relative flex items-center justify-center">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: healthColor }} />
@@ -171,7 +171,7 @@ export function VaultHero({
 
 function Stat({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: string }) {
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
       <span className="text-[11px] uppercase tracking-[0.12em] text-white/45 font-mono">{label}</span>
       <span className={`text-sm font-semibold tabular-nums ${accent ?? "text-cream-50"}`}>
         {value}
