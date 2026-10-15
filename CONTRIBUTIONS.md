@@ -7,6 +7,7 @@ Commit [`e767fde`](https://github.com/Stylenecy/cermin-saku/commit/e767fde) is t
 three Mezo-era screenshots were left out of the import).
 
 Everything below was built by **Dex Bennett** on 5–7 October 2026, within the Indonesia Web3 Hackathon 2026 submission period.
+One later commit (`cada0ac`, 16 October) adds no feature: it lets `/demo` show the 6 October run again after public testnet RPCs pruned those logs.
 To see exactly what changed in the original files: `git diff e767fde -- contracts/src agent/src frontend/src`.
 
 ## What is new
@@ -50,4 +51,11 @@ To see exactly what changed in the original files: `git diff e767fde -- contract
 | `ceb9f13` | 6 Oct 22:28 | docs: point the judge path at /demo (the old /bukti stil... |
 | `3b6662d` | 7 Oct 04:26 | docs: Google / email sign-in through Privy in the README... |
 | `5b9c0c2` | 7 Oct 16:16 | docs: link the demo video |
+| `d66c788` | 7 Oct 17:19 | fix(web): BNB price history chart reads BNB, not BTC |
+| `01fcd00` | 7 Oct 17:22 | fix(web): vault card fits a 360 px phone; Indonesian number format |
+| `ee643ee` | 7 Oct 17:28 | docs: provenance also credits Cermin's web design and illustrations |
+| `6616dc1` | 7 Oct 18:32 | docs+web: answer the hard questions plainly |
+| `6ae5f5e` | 7 Oct 18:36 | copy(web): collateral labels and the calculator note |
+| `ac9fba6` | 7 Oct 21:07 | test+docs+web: prove the crash reserve end to end |
+| `cada0ac` | 16 Oct 03:54 | fix(web): demo passbook shows the 6 Oct run again (after the submission deadline; no new feature) |
 <!-- COMMITS:END -->
