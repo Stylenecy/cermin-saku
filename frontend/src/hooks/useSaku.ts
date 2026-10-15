@@ -2,10 +2,11 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { usePublicClient, useReadContract, useReadContracts } from "wagmi";
-import { zeroAddress, type PublicClient } from "viem";
+import { parseEventLogs, zeroAddress, type PublicClient } from "viem";
 import { CERMIN_LENS_ABI, CERMIN_SAKU_ABI, CERMIN_VAULT_V11_ABI } from "@/lib/abis.generated";
 import { SAKU, sakuDeployed } from "@/lib/saku";
 import { CONTRACTS, PRICE_FEED_ABI } from "@/lib/contracts";
+import demoLedger from "@/lib/demoLedger.gen.json";
 
 const REFRESH = 15_000;
 
@@ -164,12 +165,18 @@ export interface LedgerEntry {
   icrAfterBps?: bigint;
   price?: bigint;
   timestamp?: number;
+  /** Read from the frozen demo receipts (demoLedger.gen.json), not from live logs. */
+  frozen?: boolean;
 }
 
-// BSC testnet makes ~190k blocks a day, so a passbook opened weeks after the
-// deploy spans millions of blocks. Scan in the widest range the RPC accepts
-// (publicnode: 50k; fall back to 5k), a few ranges at a time, and remember
-// how far each vault has been read so a refetch only reads new blocks.
+// BSC testnet makes ~190k blocks a day, and public RPCs keep event logs for only
+// a couple of days (publicnode: ~480k blocks); older ranges come back empty rather
+// than failing. So only ask for the window the RPC still holds. The demo vault's
+// 6 Oct run is frozen from its receipts (scripts/snapshot-demo-ledger.mjs).
+const LOG_LOOKBACK = BigInt(process.env.NEXT_PUBLIC_LOG_LOOKBACK_BLOCKS || "450000");
+// Scan in the widest range the RPC accepts (publicnode: 50k; fall back to 5k),
+// a few ranges at a time, and remember how far each vault has been read so a
+// refetch only reads new blocks.
 let chunk = 49_999n;
 const SMALL_CHUNK = 4_999n;
 const WORKERS = 4;
@@ -206,8 +213,8 @@ async function scanRange(c: PublicClient, vault: `0x${string}`, from: bigint, to
 
 /**
  * The on-chain "passbook": every Saku payment and hold for a vault, plus the
- * vault's own defend/skim, read from event logs (no indexer), from the deploy
- * block onward.
+ * vault's own defend/skim, read from event logs (no indexer) for the blocks the
+ * RPC still holds, after the frozen demo history when there is one.
  */
 export function useLedger(vault: `0x${string}` | undefined) {
   const client = usePublicClient();
@@ -221,15 +228,19 @@ export function useLedger(vault: `0x${string}` | undefined) {
       const key = vault!.toLowerCase();
       const latest = await c.getBlockNumber();
       const cached = ledgerCache.get(key);
-      const from0 = cached
-        ? cached.to + 1n
-        : SAKU.DEPLOY_BLOCK > 0n
-          ? SAKU.DEPLOY_BLOCK
-          : latest > 200_000n
-            ? latest - 200_000n
-            : 0n;
+      const snap = frozenLedger(vault!);
+      const max = (a: bigint, b: bigint) => (a > b ? a : b);
+      let from0 = cached ? cached.to + 1n : SAKU.DEPLOY_BLOCK;
+      if (snap) from0 = max(from0, snap.coversTo + 1n);
+      from0 = max(from0, latest > LOG_LOOKBACK ? latest - LOG_LOOKBACK : 0n);
       const fresh = from0 <= latest ? await scanRange(c, vault!, from0, latest) : [];
-      const out = [...(cached?.entries ?? []), ...fresh];
+      const seen = new Set<string>();
+      const out = [...(cached?.entries ?? snap?.entries ?? []), ...fresh].filter((e) => {
+        const k = `${e.txHash}-${e.logIndex}`;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
       out.sort((x, y) => (x.blockNumber === y.blockNumber ? y.logIndex - x.logIndex : Number(y.blockNumber - x.blockNumber)));
       // Timestamps for the newest 40 entries (one getBlock per distinct block not seen yet).
       const blocks = [...new Set(out.slice(0, 40).filter((e) => e.timestamp === undefined).map((e) => e.blockNumber))];
@@ -249,11 +260,55 @@ export function useLedger(vault: `0x${string}` | undefined) {
 
 /** One block range of Saku events for a vault plus the vault's own defend/skim. */
 async function readChunk(c: PublicClient, vault: `0x${string}`, from: bigint, to: bigint): Promise<LedgerEntry[]> {
-  const out: LedgerEntry[] = [];
   const [sakuLogs, vaultLogs] = await Promise.all([
     c.getContractEvents({ address: SAKU.SAKU, abi: CERMIN_SAKU_ABI, fromBlock: from, toBlock: to }),
     c.getContractEvents({ address: vault, abi: CERMIN_VAULT_V11_ABI, fromBlock: from, toBlock: to }),
   ]);
+  return toEntries(sakuLogs, vaultLogs, vault);
+}
+
+let frozen: { coversTo: bigint; entries: LedgerEntry[] } | null | undefined;
+
+/**
+ * The demo vault's 6 Oct passbook, decoded from the raw logs in demoLedger.gen.json with
+ * the same ABIs as live logs. Null for any other vault.
+ */
+function frozenLedger(vault: `0x${string}`) {
+  if (vault.toLowerCase() !== demoLedger.vault.toLowerCase()) return null;
+  if (frozen === undefined) {
+    const saku = demoLedger.saku.toLowerCase();
+    const logs = demoLedger.logs.map((l) => ({
+      address: l.address as `0x${string}`,
+      topics: l.topics as [`0x${string}`, ...`0x${string}`[]],
+      data: l.data as `0x${string}`,
+      blockHash: l.blockHash as `0x${string}`,
+      blockNumber: BigInt(l.blockNumber),
+      transactionHash: l.transactionHash as `0x${string}`,
+      transactionIndex: Number(l.transactionIndex),
+      logIndex: Number(l.logIndex),
+      removed: false,
+    }));
+    const times = demoLedger.blockTimes as Record<string, number>;
+    const entries = toEntries(
+      parseEventLogs({ abi: CERMIN_SAKU_ABI, logs: logs.filter((l) => l.address.toLowerCase() === saku) }),
+      parseEventLogs({ abi: CERMIN_VAULT_V11_ABI, logs: logs.filter((l) => l.address.toLowerCase() !== saku) }),
+      vault,
+    ).map((e) => ({ ...e, timestamp: times[String(e.blockNumber)], frozen: true }));
+    frozen = { coversTo: BigInt(demoLedger.coversToBlock), entries };
+  }
+  return frozen;
+}
+
+type DecodedLog = {
+  eventName: string;
+  args: unknown;
+  blockNumber: bigint | null;
+  transactionHash: `0x${string}` | null;
+  logIndex: number | null;
+};
+
+function toEntries(sakuLogs: readonly DecodedLog[], vaultLogs: readonly DecodedLog[], vault: `0x${string}`): LedgerEntry[] {
+  const out: LedgerEntry[] = [];
   for (const l of sakuLogs) {
     const a = l.args as Record<string, unknown>;
     if (a.vault && (a.vault as string).toLowerCase() !== vault.toLowerCase()) continue;

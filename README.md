@@ -102,7 +102,7 @@ are exact.
 
 ## Judge path (5 minutes, no wallet needed)
 
-1. Open the **demo vault** (`/demo` on the live app): a real demo vault on BSC testnet, its scheduled envelopes, and the passbook of every payment and hold, read from event logs.
+1. Open the **demo vault** (`/demo` on the live app): a real demo vault on BSC testnet, its scheduled envelopes, and the passbook of every payment and hold. New blocks are read from event logs; the 6 Oct run is frozen from its transaction receipts ([`scripts/snapshot-demo-ledger.mjs`](scripts/snapshot-demo-ledger.mjs)) because public testnet RPCs keep logs for only about two days.
 2. Find an envelope stamped **DITAHAN** (held). Click its transaction: the `AllowanceHeld` event carries the reason (`IcrBelowFloor` or `ReserveTooThin`), the ICR and the price at that moment. No MUSD moved.
 3. Drag the **"If BNB goes to Rp X"** slider. Every number is returned by `CerminLens` via `eth_call`, the same math the vault executes.
 4. Read [`CerminVault.sol` → `_sakuStatus`](contracts/src/CerminVault.sol) (the two gates) and [`CerminSaku.sol` → `release`](contracts/src/CerminSaku.sol) (pay or hold).

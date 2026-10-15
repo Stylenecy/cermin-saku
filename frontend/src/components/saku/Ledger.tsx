@@ -154,7 +154,12 @@ export function Ledger({
         </p>
       )}
       {data && data.length === 0 && (
-        <p className="mt-4 text-sm text-muted">{t("Belum ada catatan untuk vault ini.", "No entries for this vault yet.")}</p>
+        <p className="mt-4 text-sm text-muted">
+          {t(
+            "Belum ada catatan untuk vault ini dalam ±2 hari terakhir (RPC publik testnet tidak menyimpan log yang lebih lama).",
+            "No entries for this vault in the last ~2 days (public testnet RPCs do not keep older logs).",
+          )}
+        </p>
       )}
       {data && data.length > 0 && (
         <ol className="mt-3">
@@ -167,6 +172,14 @@ export function Ledger({
         <button type="button" onClick={() => setAll(!all)} className="mt-3 text-sm font-medium text-amber-600 hover:text-amber-700">
           {all ? t("Ringkas", "Show less") : t(`Tampilkan semua (${data.length})`, `Show all (${data.length})`)}
         </button>
+      )}
+      {raw?.some((e) => e.frozen) && (
+        <p className="mt-4 text-xs leading-relaxed text-muted">
+          {t(
+            "Riwayat demo 6 Okt dibaca dari struk transaksinya di BNB Chain dan disimpan bersama aplikasi, karena RPC publik testnet hanya menyimpan log ±2 hari terakhir. Setiap baris tetap bisa dicek lewat tautan transaksinya.",
+            "The 6 Oct demo history was read from its transaction receipts on BNB Chain and ships with the app, because public testnet RPCs keep logs for only ~2 days. Every row links to its transaction.",
+          )}
+        </p>
       )}
     </section>
   );
